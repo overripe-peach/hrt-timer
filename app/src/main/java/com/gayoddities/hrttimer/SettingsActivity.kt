@@ -18,27 +18,37 @@ import androidx.glance.appwidget.GlanceAppWidgetManager
 import androidx.glance.appwidget.state.updateAppWidgetState
 import androidx.lifecycle.lifecycleScope
 import kotlinx.coroutines.launch
+import androidx.compose.ui.graphics.Color
+import androidx.compose.foundation.clickable
 
 class SettingsActivity : ComponentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        val currentDays = TimerPreferences.getDurationMs(this) / (24 * 60 * 60 * 1000L)
+        val currentDays = TimerPreferences.getDurationDays(this) / (24 * 60 * 60 * 1000L)
         val currentMedicine = TimerPreferences.getMedicineName(this)
+        val currentColor = TimerPreferences.getReadyColor(this)
 
         setContent {
             MaterialTheme {
                 SettingsScreen(
+                    initialColor = currentColor,
+                    onSaveColor = { newColor ->
+                        TimerPreferences.setReadyColor(this@SettingsActivity, newColor)
+                    },
+
                     initialDays = currentDays.toInt(),
                     initialMedicine = currentMedicine,
                     onSaveDays = { newDays ->
                         TimerPreferences.setDurationDays(this@SettingsActivity, newDays)
                         Toast.makeText(this, "Timer duration set to $newDays days", Toast.LENGTH_SHORT).show()
                     },
+
                     onSaveMedicine = { newName ->
                         TimerPreferences.setMedicineName(this@SettingsActivity, newName)
                     },
+
                     onResetTimer = {
                         lifecycleScope.launch {
                             val glanceIds = GlanceAppWidgetManager(this@SettingsActivity)
@@ -58,17 +68,21 @@ class SettingsActivity : ComponentActivity() {
                             overridePendingTransition(0, 0)
                         }
                     },
+
                     onClose = {
                         lifecycleScope.launch {
                             val glanceIds = GlanceAppWidgetManager(this@SettingsActivity)
                                 .getGlanceIds(HRTWidget::class.java)
 
+                            val currentMedicine = TimerPreferences.getMedicineName(this@SettingsActivity)
+                            val currentColor = TimerPreferences.getReadyColor(this@SettingsActivity).toLong()
+
                             glanceIds.forEach { glanceId ->
                                 // Touch the glance state so it's forced to re-render
                                 updateAppWidgetState(this@SettingsActivity, glanceId) { prefs ->
                                     // We can toggle or re-set the start time (or a dummy key) to force a state change
-                                    val currentStart = prefs[TimerKeys.START_TIME] ?: 0L
-                                    prefs[TimerKeys.START_TIME] = currentStart
+                                    prefs[TimerKeys.MEDICINE_NAME] = currentMedicine
+                                    prefs[TimerKeys.READY_COLOR] = currentColor
                                 }
                                 HRTWidget().update(this@SettingsActivity, glanceId)
                             }
@@ -88,8 +102,10 @@ class SettingsActivity : ComponentActivity() {
 fun SettingsScreen(
     initialDays: Int,
     initialMedicine: String,
+    initialColor: Int,
     onSaveDays: (Int) -> Unit,
     onSaveMedicine: (String) -> Unit,
+    onSaveColor: (Int) -> Unit,
     onResetTimer: () -> Unit,
     onClose: () -> Unit
 ) {
@@ -145,13 +161,13 @@ fun SettingsScreen(
 
             Spacer(modifier = Modifier.height(8.dp))
 
-            // Stepper Row (- [ Input ] +)
+            /////UPDATE TIMER DURATION + / - BUTTONS ////
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(56.dp),
                 verticalAlignment = Alignment.CenterVertically
-            ) {
+            ) { //- BUTTON ON LEFT
                 Button(
                     onClick = { updateDays(-1) },
                     modifier = Modifier.weight(1f).fillMaxHeight(),
@@ -165,7 +181,7 @@ fun SettingsScreen(
                 ) {
                     Text("-", fontSize = 22.sp, fontWeight = FontWeight.Bold)
                 }
-
+                //DURATION DAYS TEXT BOX
                 OutlinedTextField(
                     value = daysText,
                     onValueChange = { newValue ->
@@ -182,7 +198,7 @@ fun SettingsScreen(
                     singleLine = true,
                     shape = androidx.compose.foundation.shape.RoundedCornerShape(0.dp)
                 )
-
+                //+ DURATION DAYS BUTTON ON RIGHT
                 Button(
                     onClick = { updateDays(1) },
                     modifier = Modifier.weight(1f).fillMaxHeight(),
@@ -197,8 +213,44 @@ fun SettingsScreen(
                     Text("+", fontSize = 22.sp, fontWeight = FontWeight.Bold)
                 }
             }
+            Spacer(modifier = Modifier.height(24.dp))
+            ////END OF DURATION DAYS INPUT CODE ///////
+            ////READY STATE COLOR PICKER CODE////
+            Text(
+                text = "Ready State Color",
+                fontSize = 14.sp,
+                fontWeight = FontWeight.Medium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
 
+            Spacer(modifier = Modifier.height(8.dp))
+
+            // Preset color options row
+            val presetColors = listOf(
+                0xFF4CAF50, // Green
+                0xFF2196F3, // Blue
+                0xFF9C27B0, // Purple
+                0xFF009688, // Teal
+                0xFFE91E63  // Pink
+            )
+
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceEvenly
+            ) {
+                presetColors.forEach { colorVal ->
+                    val color = Color(colorVal)
+                    Surface(
+                        modifier = Modifier
+                            .size(40.dp)
+                            .clickable { onSaveColor(colorVal.toInt()) },
+                        shape = androidx.compose.foundation.shape.CircleShape,
+                        color = color
+                    ) {}
+                }
+            }
             Spacer(modifier = Modifier.height(28.dp))
+            ////END OF READY STATE COLOR PICKER CODE////
 
             // Reset Timer Button
             Button(

@@ -39,32 +39,30 @@ import androidx.glance.layout.Row
 import androidx.glance.layout.width
 import androidx.glance.layout.Box
 import androidx.glance.layout.fillMaxHeight
-//import androidx.glance.appwidget.updateAll
-//import androidx.activity.ComponentActivity
+import androidx.datastore.preferences.core.stringPreferencesKey
 
 object TimerKeys {
     val START_TIME = longPreferencesKey("start_time")
+    val MEDICINE_NAME = stringPreferencesKey("medicine_name")
+    val READY_COLOR = longPreferencesKey("ready_color")
 }
 
 class HRTWidget : GlanceAppWidget() {
 
     override val stateDefinition: GlanceStateDefinition<*> = PreferencesGlanceStateDefinition
 
-    /*companion object {
-        suspend fun updateAllWidgets(context: Context) {
-            HRTWidget().updateAll(context)
-        }
-    }*/
-
     override suspend fun provideGlance(context: Context, id: GlanceId) {
         provideContent {
             val prefs = currentState<androidx.datastore.preferences.core.Preferences>()
             val startTime = prefs[TimerKeys.START_TIME] ?: 0L
-            val timerDurationMs = TimerPreferences.getDurationMs(context)
-            // Check if duration has elapsed
+            val timerDurationMs = TimerPreferences.getDurationDays(context)
+            // Check if timer duration has elapsed
             val isFinished = startTime == 0L || (System.currentTimeMillis() - startTime >= timerDurationMs)
-            val medicineName = TimerPreferences.getMedicineName(context)
-            val backgroundColor = if (isFinished) Color(0xFF4CAF50) else Color(0xFF333333)
+
+            // Read from Glance state, fallback to preferences if empty
+            val medicineName = prefs[TimerKeys.MEDICINE_NAME] ?: TimerPreferences.getMedicineName(context)
+            val customReadyColor = prefs[TimerKeys.READY_COLOR]?.toInt() ?: TimerPreferences.getReadyColor(context)
+            val backgroundColor = if (isFinished) Color(customReadyColor) else Color(0xFF333333)
 
             val statusText = if (isFinished) { //dose timer is ready to start
                 "$medicineName Ready\n\n(Tap to Start)"
@@ -135,7 +133,7 @@ class HRTWidget : GlanceAppWidget() {
 class ToggleTimerAction : ActionCallback {
     override suspend fun onAction(context: Context, glanceId: GlanceId, parameters: ActionParameters) {
         val currentTime = System.currentTimeMillis()
-        val durationMs = TimerPreferences.getDurationMs(context)
+        val durationMs = TimerPreferences.getDurationDays(context)
 
         updateAppWidgetState(context, glanceId) { prefs ->
             prefs[TimerKeys.START_TIME] = currentTime
