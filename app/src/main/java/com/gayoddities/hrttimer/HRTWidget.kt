@@ -61,22 +61,18 @@ class HRTWidget : GlanceAppWidget() {
             val prefs = currentState<androidx.datastore.preferences.core.Preferences>()
             val startTime = prefs[TimerKeys.START_TIME] ?: 0L
             val timerDurationMs = TimerPreferences.getDurationMs(context)
-            //val currentTime = System.currentTimeMillis()
-            val isFinished = startTime == 0L || (System.currentTimeMillis() - startTime >= timerDurationMs)
             // Check if duration has elapsed
-            //val hasExpired = startTime != 0L && (currentTime - startTime >= timerDurationMs)
-            //val isFinished = startTime == 0L || hasExpired
+            val isFinished = startTime == 0L || (System.currentTimeMillis() - startTime >= timerDurationMs)
             val medicineName = TimerPreferences.getMedicineName(context)
             val backgroundColor = if (isFinished) Color(0xFF4CAF50) else Color(0xFF333333)
 
-            val statusText = if (isFinished) {
+            val statusText = if (isFinished) { //dose timer is ready to start
                 "$medicineName Ready\n\n(Tap to Start)"
-            } else {
+            } else { //information text for when the timer is running and the button is disabled
                 val finishTime = startTime + timerDurationMs
-                // Include day of week (EEE) and month/day (MMM d) alongside the time
                 val formatter = SimpleDateFormat("EEE, MMM d 'at' hh:mm a", Locale.getDefault())
                 val formattedDate = formatter.format(Date(finishTime))
-                "Next dose of $medicineName\n\nFinishing at:\n\n$formattedDate"
+                "Next dose of $medicineName at:\n\n$formattedDate"
             }
 
             // Base modifier
@@ -90,11 +86,11 @@ class HRTWidget : GlanceAppWidget() {
                 modifier = modifier.clickable(actionRunCallback<ToggleTimerAction>())
             }
 
-            // Change your outer container from a Column to a Row:
+
             Row(
                 modifier = GlanceModifier.fillMaxSize()
             ) {
-                // 1. Your Existing Main Timer Column (Add .defaultWeight() so it takes remaining space)
+                // Main Timer Column
                 Column(
                     modifier = GlanceModifier
                         .defaultWeight() // Add this so it shares space with the gear button
@@ -104,7 +100,7 @@ class HRTWidget : GlanceAppWidget() {
                         .let { if (isFinished) it.clickable(actionRunCallback<ToggleTimerAction>()) else it },
                     verticalAlignment = Alignment.Vertical.CenterVertically,
                     horizontalAlignment = Alignment.Horizontal.CenterHorizontally
-                ) {
+                ) {  //text formatting for timer area of widget
                     Text(
                         text = statusText,
                         style = TextStyle(
@@ -114,7 +110,7 @@ class HRTWidget : GlanceAppWidget() {
                     )
                 }
 
-                // 2. Settings Gear Button Area
+                //Visual layout for Settings Gear Button Area
                 Box(
                     modifier = GlanceModifier
                         .width(48.dp)
@@ -122,7 +118,7 @@ class HRTWidget : GlanceAppWidget() {
                         .background(Color(0xFF222222))
                         .clickable(actionStartActivity<SettingsActivity>()),
                     contentAlignment = Alignment.Center
-                ) {
+                ) { //text color
                     Text(
                         text = "⚙️",
                         style = TextStyle(
@@ -137,11 +133,7 @@ class HRTWidget : GlanceAppWidget() {
 }
 
 class ToggleTimerAction : ActionCallback {
-    override suspend fun onAction(
-        context: Context,
-        glanceId: GlanceId,
-        parameters: ActionParameters
-    ) {
+    override suspend fun onAction(context: Context, glanceId: GlanceId, parameters: ActionParameters) {
         val currentTime = System.currentTimeMillis()
         val durationMs = TimerPreferences.getDurationMs(context)
 
