@@ -1,0 +1,7 @@
+HRT Timer is an android widget that is a medicine dose timer designed around the needs of people on HRT.  
+Use the settings page to set the medicine label, the timer duration in days, and a desired background color for the dose ready indicator state.
+When you take your dose, simply press the widget.  That sets the button to a grey disabled state. When it is time for your next dose the widget will change
+back to the ready state color (defaults to green).  No more messing about with calendar events or trying to remember when you took your last dose.
+You can have multiple widgets on the phone.  Data from one widget instance will not cross over with another.  
+
+If you have feature requests or bug reports please drop them in the github - https://github.com/overripe-peach/hrt-timer
