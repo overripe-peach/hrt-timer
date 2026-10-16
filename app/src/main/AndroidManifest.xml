@@ -5,18 +5,23 @@
 
     <application
         android:allowBackup="true"
-        android:icon="@mipmap/ic_launcher"
+        android:icon="@drawable/app_logo"
+        android:roundIcon="@drawable/app_logo"
         android:label="@string/app_name"
         android:supportsRtl="true"
         android:theme="@style/Theme.HRTTimer">
 
         <!-- Your widget receiver -->
-        <receiver android:name=".HRTWidgetReceiver"
-            android:exported="true">
+        <receiver
+            android:name=".HRTWidgetReceiver"
+            android:exported="true"
+            android:icon="@drawable/app_logo"
+            android:label="@string/app_name">
             <intent-filter>
                 <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
             </intent-filter>
-            <meta-data android:name="android.appwidget.provider"
+            <meta-data
+                android:name="android.appwidget.provider"
                 android:resource="@xml/hrt_widget_info" />
         </receiver>
 
