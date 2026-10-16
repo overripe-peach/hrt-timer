@@ -39,6 +39,7 @@ import androidx.glance.layout.Row
 import androidx.glance.layout.width
 import androidx.glance.layout.Box
 import androidx.glance.layout.fillMaxHeight
+import androidx.glance.appwidget.updateAll
 //import androidx.activity.ComponentActivity
 
 object TimerKeys {
@@ -49,28 +50,33 @@ class HRTWidget : GlanceAppWidget() {
 
     override val stateDefinition: GlanceStateDefinition<*> = PreferencesGlanceStateDefinition
 
+    companion object {
+        suspend fun updateAllWidgets(context: Context) {
+            HRTWidget().updateAll(context)
+        }
+    }
+
     override suspend fun provideGlance(context: Context, id: GlanceId) {
         provideContent {
             val prefs = currentState<androidx.datastore.preferences.core.Preferences>()
             val startTime = prefs[TimerKeys.START_TIME] ?: 0L
-
-            val timerDurationMs = TimerPreferences.TIMER_DURATION_MS
-            val currentTime = System.currentTimeMillis()
-
+            val timerDurationMs = TimerPreferences.getDurationMs(context)
+            //val currentTime = System.currentTimeMillis()
+            val isFinished = startTime == 0L || (System.currentTimeMillis() - startTime >= timerDurationMs)
             // Check if duration has elapsed
-            val hasExpired = startTime != 0L && (currentTime - startTime >= timerDurationMs)
-            val isFinished = startTime == 0L || hasExpired
-
+            //val hasExpired = startTime != 0L && (currentTime - startTime >= timerDurationMs)
+            //val isFinished = startTime == 0L || hasExpired
+            val medicineName = TimerPreferences.getMedicineName(context)
             val backgroundColor = if (isFinished) Color(0xFF4CAF50) else Color(0xFF333333)
 
             val statusText = if (isFinished) {
-                "TAKE YOUR HRT\n(Tap to start timer)"
+                "$medicineName Ready\n\n(Tap to Start)"
             } else {
                 val finishTime = startTime + timerDurationMs
                 // Include day of week (EEE) and month/day (MMM d) alongside the time
-                val formatter = SimpleDateFormat("EEE, MMM d 'at' hh:mm:ss a", Locale.getDefault())
+                val formatter = SimpleDateFormat("EEE, MMM d 'at' hh:mm a", Locale.getDefault())
                 val formattedDate = formatter.format(Date(finishTime))
-                "Next HRT dose:\n\n$formattedDate"
+                "Next dose of $medicineName\n\nFinishing at:\n\n$formattedDate"
             }
 
             // Base modifier
@@ -126,19 +132,6 @@ class HRTWidget : GlanceAppWidget() {
                     )
                 }
             }
-            /*Column(
-                modifier = modifier,
-                verticalAlignment = Alignment.Vertical.CenterVertically,
-                horizontalAlignment = Alignment.Horizontal.CenterHorizontally
-            ) {
-                Text(
-                    text = statusText,
-                    style = TextStyle(
-                        color = ColorProvider(day = Color.White, night = Color.White),
-                        fontWeight = FontWeight.Bold
-                    )
-                )
-            }*/
         }
     }
 }
@@ -150,7 +143,7 @@ class ToggleTimerAction : ActionCallback {
         parameters: ActionParameters
     ) {
         val currentTime = System.currentTimeMillis()
-        val durationMs = TimerPreferences.TIMER_DURATION_MS
+        val durationMs = TimerPreferences.getDurationMs(context)
 
         updateAppWidgetState(context, glanceId) { prefs ->
             prefs[TimerKeys.START_TIME] = currentTime
