@@ -39,7 +39,7 @@ import androidx.glance.layout.Row
 import androidx.glance.layout.width
 import androidx.glance.layout.Box
 import androidx.glance.layout.fillMaxHeight
-import androidx.glance.appwidget.updateAll
+//import androidx.glance.appwidget.updateAll
 //import androidx.activity.ComponentActivity
 
 object TimerKeys {
@@ -50,11 +50,11 @@ class HRTWidget : GlanceAppWidget() {
 
     override val stateDefinition: GlanceStateDefinition<*> = PreferencesGlanceStateDefinition
 
-    companion object {
+    /*companion object {
         suspend fun updateAllWidgets(context: Context) {
             HRTWidget().updateAll(context)
         }
-    }
+    }*/
 
     override suspend fun provideGlance(context: Context, id: GlanceId) {
         provideContent {
