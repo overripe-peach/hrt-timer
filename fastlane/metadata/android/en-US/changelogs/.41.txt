@@ -1,0 +1,20 @@
+.41 is the first release version.
+
+Current feature set:
+-timer system notification works
+-android widget update for any settings change works
+-settings page containing 
+	-customizable medicine name, 
+	-timer duration, 
+	-ready state color
+	-force timer reset to ready state 
+-android widget layout preview
+-icon for android widget selction screen
+
+Bugs / Issues:
+-it has no known bugs at this time
+
+Areas that need testing:
+-What happens when the app is updated with a running timer?
+-will settings persist across updates?
+-what happens when phone reboots with running timer
