@@ -26,7 +26,7 @@ class SettingsActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        val currentDays = TimerPreferences.getDurationDays(this) / (24 * 60 * 60 * 1000L)
+        val currentDays = TimerPreferences.getDurationMS(this) / (24 * 60 * 60 * 1000L)
         val currentMedicine = TimerPreferences.getMedicineName(this)
         val currentColor = TimerPreferences.getReadyColor(this)
 
@@ -99,6 +99,7 @@ class SettingsActivity : ComponentActivity() {
 }
 
 @Composable
+@Suppress("UNUSED_PARAMETER")
 fun SettingsScreen(
     initialDays: Int,
     initialMedicine: String,

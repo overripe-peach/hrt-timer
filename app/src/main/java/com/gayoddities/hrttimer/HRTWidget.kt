@@ -30,10 +30,8 @@ import androidx.glance.text.TextStyle
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
-import android.app.AlarmManager
-import android.app.PendingIntent
-import android.content.Intent
-import android.os.Build
+//import android.app.PendingIntent
+//import android.content.Intent
 import androidx.glance.action.actionStartActivity
 import androidx.glance.layout.Row
 import androidx.glance.layout.width
@@ -55,35 +53,27 @@ class HRTWidget : GlanceAppWidget() {
         provideContent {
             val prefs = currentState<androidx.datastore.preferences.core.Preferences>()
             val startTime = prefs[TimerKeys.START_TIME] ?: 0L
-            val timerDurationMs = TimerPreferences.getDurationDays(context)
+            val timerDuration = TimerPreferences.getDurationMS(context)
             // Check if timer duration has elapsed
-            val isFinished = startTime == 0L || (System.currentTimeMillis() - startTime >= timerDurationMs)
+            val isReady = TimerUtils.isTimerExpired(startTime, timerDuration)
 
             // Read from Glance state, fallback to preferences if empty
             val medicineName = prefs[TimerKeys.MEDICINE_NAME] ?: TimerPreferences.getMedicineName(context)
             val customReadyColor = prefs[TimerKeys.READY_COLOR]?.toInt() ?: TimerPreferences.getReadyColor(context)
-            val backgroundColor = if (isFinished) Color(customReadyColor) else Color(0xFF333333)
+            val backgroundColor = if (isReady) Color(customReadyColor) else Color(0xFF333333)
 
-            val statusText = if (isFinished) { //dose timer is ready to start
-                "$medicineName Ready\n\n(Tap to Start)"
-            } else { //information text for when the timer is running and the button is disabled
-                val finishTime = startTime + timerDurationMs
+            //var modifier = GlanceModifier.fillMaxSize().background(backgroundColor).padding(16.dp)
+            var statusText = "$medicineName Ready\n\n(Tap to Start)"
+
+            if (!isReady) { //information text for when the timer is running and the button is disabled
+                val finishTime = startTime + timerDuration
                 val formatter = SimpleDateFormat("EEE, MMM d 'at' hh:mm a", Locale.getDefault())
                 val formattedDate = formatter.format(Date(finishTime))
-                "Next dose of $medicineName at:\n\n$formattedDate"
+                statusText = "Next dose of $medicineName at:\n\n$formattedDate"
+            } else {
+                // Only clickable when finished/ready
+               // modifier = modifier.clickable(actionRunCallback<ToggleTimerAction>())
             }
-
-            // Base modifier
-            var modifier = GlanceModifier
-                .fillMaxSize()
-                .background(backgroundColor)
-                .padding(16.dp)
-
-            // Only clickable when finished/ready
-            if (isFinished) {
-                modifier = modifier.clickable(actionRunCallback<ToggleTimerAction>())
-            }
-
 
             Row(
                 modifier = GlanceModifier.fillMaxSize()
@@ -95,7 +85,7 @@ class HRTWidget : GlanceAppWidget() {
                         .fillMaxHeight()
                         .background(backgroundColor)
                         .padding(16.dp)
-                        .let { if (isFinished) it.clickable(actionRunCallback<ToggleTimerAction>()) else it },
+                        .let { if (isReady) it.clickable(actionRunCallback<ToggleTimerAction>()) else it },
                     verticalAlignment = Alignment.Vertical.CenterVertically,
                     horizontalAlignment = Alignment.Horizontal.CenterHorizontally
                 ) {  //text formatting for timer area of widget
@@ -133,48 +123,15 @@ class HRTWidget : GlanceAppWidget() {
 class ToggleTimerAction : ActionCallback {
     override suspend fun onAction(context: Context, glanceId: GlanceId, parameters: ActionParameters) {
         val currentTime = System.currentTimeMillis()
-        val durationMs = TimerPreferences.getDurationDays(context)
+        val timerDuration = TimerPreferences.getDurationMS(context)
+        val triggerTime = currentTime + timerDuration
 
         updateAppWidgetState(context, glanceId) { prefs ->
             prefs[TimerKeys.START_TIME] = currentTime
             Log.d("HRTWidget", "Timer started at $currentTime")
         }
 
-        val alarmManager = context.getSystemService(Context.ALARM_SERVICE) as AlarmManager
-        val intent = Intent(context, TimerAlarmReceiver::class.java)
-        val pendingIntent = PendingIntent.getBroadcast(
-            context, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
-        )
-
-        val triggerTime = currentTime + durationMs
-
-        // Check exact alarm permission on Android 12+ (API 31+)
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-            if (alarmManager.canScheduleExactAlarms()) {
-                alarmManager.setExactAndAllowWhileIdle(
-                    AlarmManager.RTC_WAKEUP,
-                    triggerTime,
-                    pendingIntent
-                )
-                Log.d("HRTWidget", "Exact alarm scheduled for $triggerTime")
-            } else {
-                // Fallback to standard inexact alarm if exact permission isn't available
-                alarmManager.set(
-                    AlarmManager.RTC_WAKEUP,
-                    triggerTime,
-                    pendingIntent
-                )
-                Log.d("HRTWidget", "Inexact alarm scheduled (exact permission not granted)")
-            }
-        } else {
-            alarmManager.setExactAndAllowWhileIdle(
-                AlarmManager.RTC_WAKEUP,
-                triggerTime,
-                pendingIntent
-            )
-            Log.d("HRTWidget", "Exact alarm scheduled for $triggerTime")
-        }
-
+        TimerUtils.scheduleTimerAlarm(context, triggerTime)
         HRTWidget().update(context, glanceId)
     }
 }

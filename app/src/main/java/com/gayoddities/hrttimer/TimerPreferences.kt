@@ -2,7 +2,7 @@ package com.gayoddities.hrttimer
 
 import android.content.Context
 import androidx.core.content.edit
-import android.content.SharedPreferences
+//import android.content.SharedPreferences
 
 
 object TimerPreferences {
@@ -19,17 +19,19 @@ object TimerPreferences {
     const val DEFAULT_MEDICINE_NAME = "HRT"
     //const val TIMER_DURATION_MS = 5 * 24 * 60 * 60 * 1000L//10 * 1000L for 5 second test
 
-   fun startTimer(context: Context) {
+    @Suppress("UNUSED_PARAMETER")
+    fun startTimer(context: Context) {
         val prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
         prefs.edit { putLong(KEY_START_TIME, System.currentTimeMillis()) }
     }
 
+    @Suppress("UNUSED_PARAMETER")
     fun resetTimer(context: Context) {
         val prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
         prefs.edit { remove(KEY_START_TIME) }
     }
 
-    fun getDurationDays(context: Context): Long {
+    fun getDurationMS(context: Context): Long {
         val prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
         val days = prefs.getInt(KEY_DURATION_DAYS, DEFAULT_DAYS)
         return days * 24 * 60 * 60 * 1000L
