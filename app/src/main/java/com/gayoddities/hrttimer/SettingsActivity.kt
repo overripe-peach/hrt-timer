@@ -51,6 +51,10 @@ class SettingsActivity : ComponentActivity() {
 
                     onResetTimer = {
                         lifecycleScope.launch {
+                            // 1. Clear the core storage timer state
+                            TimerPreferences.resetTimer(this@SettingsActivity)
+
+                             //Refresh the Glance widget states
                             val glanceIds = GlanceAppWidgetManager(this@SettingsActivity)
                                 .getGlanceIds(HRTWidget::class.java)
 

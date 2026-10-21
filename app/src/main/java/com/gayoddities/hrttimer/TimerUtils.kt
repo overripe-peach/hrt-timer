@@ -13,7 +13,7 @@ object TimerUtils {
     // Check if a timer has expired based on start time and duration
     fun isTimerExpired(startTime: Long, duration: Long, currentTime: Long = System.currentTimeMillis()): Boolean {
         //if timer starting time and duration are not 0 AND the current time is past the target time, return true
-        return !(startTime <= 0L || duration <= 0L) && currentTime >= (startTime + duration)
+        return (startTime <= 0L || duration <= 0L) || currentTime >= (startTime + duration)
     }
 
     /*// Calculate remaining time
