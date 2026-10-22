@@ -10,21 +10,54 @@ import android.util.Log
 
 object TimerUtils {
 
-    // Check if a timer has expired based on start time and duration
+
+    /**
+     * Check if an active timer has expired based on start time and duration.
+     * Returns true only if a timer was started (startTime > 0) and the elapsed time has reached the duration.
+     */
     fun isTimerExpired(startTime: Long, duration: Long, currentTime: Long = System.currentTimeMillis()): Boolean {
         //if timer starting time and duration are not 0 AND the current time is past the target time, return true
-        return (startTime <= 0L || duration <= 0L) || currentTime >= (startTime + duration)
+        //return (startTime <= 0L || duration <= 0L) || currentTime >= (startTime + duration)
+        return getRemainingTime(startTime,duration,currentTime) <= 0
     }
 
-    /*// Calculate remaining time
+    /**
+     * Convenience overload that automatically fetches the user's TimerPreferences.
+     */
+    fun isTimerExpired(context: Context, appWidgetId: Int) : Boolean {
+        val currentTime = System.currentTimeMillis()
+        val startTime = TimerPreferences.getStartTime(context,appWidgetId)
+        val duration = TimerPreferences.getDurationMS(context, appWidgetId)
+        return isTimerExpired(startTime, duration, currentTime)
+    }
+
+    /**
+     * Calculate remaining time in milliseconds.
+     */
     fun getRemainingTime(startTime: Long, duration: Long, currentTime: Long = System.currentTimeMillis()): Long {
         if (startTime <= 0L || duration <= 0L) return 0L
         val targetTime = startTime + duration
         return maxOf(0L, targetTime - currentTime)
-    }*/
+    }
 
+    /**Overload function that automatically fetches TimerPreferences and returns remaining Time
+     *
+     */
+    @Suppress("unused")
+    fun getRemainingTime(context: Context, appWidgetId: Int): Long {
+        val startTime = TimerPreferences.getStartTime(context, appWidgetId)
+        val currentTime = System.currentTimeMillis()
+        val duration = TimerPreferences.getDurationMS(context, appWidgetId)
+        return getRemainingTime(startTime, duration, currentTime)
+    }
+
+    fun getFinishTime(context:Context, appWidgetId: Int): Long {
+        return TimerPreferences.getStartTime(context,appWidgetId) + TimerPreferences.getDurationMS(context,appWidgetId)
+    }
+   /////
     /**
-     * Centralized function to schedule the exact alarm for when the timer completes.
+     * Centralized function to schedule the alarm for when the timer completes,
+     * complete with Android 12+ (API 31+) exact alarm permission checks and fallback.
      */
     fun scheduleTimerAlarm(context: Context, targetTime: Long) {
         val alarmManager = context.getSystemService(Context.ALARM_SERVICE) as AlarmManager

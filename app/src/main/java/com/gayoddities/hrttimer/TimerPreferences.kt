@@ -1,63 +1,80 @@
 package com.gayoddities.hrttimer
 
 import android.content.Context
+import android.util.Log
 import androidx.core.content.edit
-//import android.content.SharedPreferences
+import android.content.SharedPreferences
+//import androidx.glance.GlanceId
 
 
 object TimerPreferences {
     private const val PREFS_NAME = "hrt_timer_prefs"
     private const val KEY_START_TIME = "start_time"
-    private const val KEY_DURATION_DAYS = "duration_days"
+    private const val KEY_DURATION_MS = "duration_ms"
     private const val KEY_MEDICINE_NAME = "medicine_name"
-    //ready state background color store
+    //Ready state background color store
     private const val KEY_READY_COLOR = "ready_color"
-    //background ready state defaults to green
+    //Background ready state defaults to green
     const val DEFAULT_READY_COLOR = 0xFF4CAF50.toInt()
     // Default to 5 days if none is set
-    const val DEFAULT_DAYS = 5
+    const val DEFAULT_DURATION = 5 * 24 * 60 * 60 * 1000L
     const val DEFAULT_MEDICINE_NAME = "HRT"
-    //const val TIMER_DURATION_MS = 5 * 24 * 60 * 60 * 1000L//10 * 1000L for 5 second test
+    const val RUNNING_COLOR = 0xFF333333.toInt()
 
-    @Suppress("UNUSED_PARAMETER")
-    fun startTimer(context: Context) {
-        val prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
-        prefs.edit { putLong(KEY_START_TIME, System.currentTimeMillis()) }
+    /**
+     * Returns a SharedPreferences instance scoped to a specific widget instance ID if provided,
+     * ensuring independent storage per widget.
+     */
+    private fun getPrefs(context: Context, appWidgetId: Int): SharedPreferences {
+        val name = if (appWidgetId != android.appwidget.AppWidgetManager.INVALID_APPWIDGET_ID) {
+            "${PREFS_NAME}_$appWidgetId"
+        } else {
+            PREFS_NAME
+        }
+        return context.getSharedPreferences(name, Context.MODE_PRIVATE)
     }
 
-    @Suppress("UNUSED_PARAMETER")
-    fun resetTimer(context: Context) {
-        val prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
-        prefs.edit { remove(KEY_START_TIME) }
+    fun startTimer(context: Context, appWidgetId: Int) {
+        val currentTime = System.currentTimeMillis()
+        getPrefs(context, appWidgetId).edit(commit = true) { putLong(KEY_START_TIME, currentTime) }
+        Log.d("TimerPreferences", "Timer started at $currentTime for widget ID: $appWidgetId")
     }
 
-    fun getDurationMS(context: Context): Long {
-        val prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
-        val days = prefs.getInt(KEY_DURATION_DAYS, DEFAULT_DAYS)
-        return days * 24 * 60 * 60 * 1000L
-    }
-    fun setDurationDays(context: Context, days: Int) {
-        val prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
-        prefs.edit { putInt(KEY_DURATION_DAYS, days) }
+
+    fun resetTimer(context: Context, appWidgetId: Int) {
+        getPrefs(context, appWidgetId).edit (commit = true) { putLong(KEY_START_TIME, -1L) }
+        Log.d("TimerPreferences", "Reset timer for widget ID: $appWidgetId")
     }
 
-    fun getMedicineName(context: Context): String {
-        val prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
-        return prefs.getString(KEY_MEDICINE_NAME, DEFAULT_MEDICINE_NAME) ?: DEFAULT_MEDICINE_NAME
+    fun getDurationMS(context: Context, appWidgetId: Int): Long {
+        return getPrefs(context, appWidgetId).getLong(KEY_DURATION_MS, DEFAULT_DURATION)
     }
 
-    fun setMedicineName(context: Context, name: String) {
-        val prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
-        prefs.edit { putString(KEY_MEDICINE_NAME, name.ifBlank { DEFAULT_MEDICINE_NAME }) }
+    fun getDurationDays(context: Context, appWidgetId: Int): Long {
+        return getPrefs(context, appWidgetId).getLong(KEY_DURATION_MS, DEFAULT_DURATION) / (24L * 60L * 60L * 1000L)
     }
 
-    fun getReadyColor(context: Context): Int {
-        val prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
-        return prefs.getInt(KEY_READY_COLOR, DEFAULT_READY_COLOR)
+    fun setDurationMS(context: Context, appWidgetId: Int, duration: Long) {
+        getPrefs(context, appWidgetId).edit(commit = true) { putLong(KEY_DURATION_MS, duration) }
     }
 
-    fun setReadyColor(context: Context, colorInt: Int) {
-        val prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
-        prefs.edit { putInt(KEY_READY_COLOR, colorInt) }
+    fun getStartTime(context: Context, appWidgetId: Int): Long {
+        return getPrefs(context, appWidgetId).getLong(KEY_START_TIME, -1L)
+    }
+
+    fun getMedicineName(context: Context, appWidgetId: Int): String {
+        return getPrefs(context, appWidgetId).getString(KEY_MEDICINE_NAME, DEFAULT_MEDICINE_NAME) ?: DEFAULT_MEDICINE_NAME
+    }
+
+    fun setMedicineName(context: Context, appWidgetId: Int, name: String) {
+        getPrefs(context, appWidgetId).edit(commit = true) { putString(KEY_MEDICINE_NAME, name.ifBlank { DEFAULT_MEDICINE_NAME }) }
+    }
+
+    fun getReadyColor(context: Context, appWidgetId: Int): Int {
+        return getPrefs(context, appWidgetId).getInt(KEY_READY_COLOR, DEFAULT_READY_COLOR)
+    }
+
+    fun setReadyColor(context: Context, appWidgetId: Int, colorInt: Int) {
+        getPrefs(context, appWidgetId).edit(commit = true) { putInt(KEY_READY_COLOR, colorInt) }
     }
 }

@@ -1,6 +1,8 @@
 package com.gayoddities.hrttimer
 
+import android.annotation.SuppressLint
 import android.content.Context
+import android.content.Intent
 import android.util.Log
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
@@ -14,56 +16,60 @@ import androidx.glance.appwidget.GlanceAppWidgetReceiver
 import androidx.glance.appwidget.action.ActionCallback
 import androidx.glance.appwidget.action.actionRunCallback
 import androidx.glance.appwidget.provideContent
-import androidx.glance.appwidget.state.updateAppWidgetState
 import androidx.glance.background
 import androidx.glance.color.ColorProvider
-import androidx.glance.currentState
 import androidx.glance.layout.Alignment
 import androidx.glance.layout.Column
 import androidx.glance.layout.fillMaxSize
 import androidx.glance.layout.padding
-import androidx.glance.state.GlanceStateDefinition
-import androidx.glance.state.PreferencesGlanceStateDefinition
 import androidx.glance.text.FontWeight
 import androidx.glance.text.Text
 import androidx.glance.text.TextStyle
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
-//import android.app.PendingIntent
-//import android.content.Intent
-import androidx.glance.action.actionStartActivity
+import androidx.glance.appwidget.action.actionStartActivity
 import androidx.glance.layout.Row
 import androidx.glance.layout.width
 import androidx.glance.layout.Box
 import androidx.glance.layout.fillMaxHeight
-import androidx.datastore.preferences.core.stringPreferencesKey
+import androidx.glance.state.GlanceStateDefinition
+import androidx.glance.state.PreferencesGlanceStateDefinition
 
 object TimerKeys {
-    val START_TIME = longPreferencesKey("start_time")
-    val MEDICINE_NAME = stringPreferencesKey("medicine_name")
-    val READY_COLOR = longPreferencesKey("ready_color")
+    var LAST_UPDATED = longPreferencesKey("last_updated")
 }
 
 class HRTWidget : GlanceAppWidget() {
 
     override val stateDefinition: GlanceStateDefinition<*> = PreferencesGlanceStateDefinition
 
+    @SuppressLint("NonObservableLocale")
     override suspend fun provideGlance(context: Context, id: GlanceId) {
         provideContent {
-            val prefs = currentState<androidx.datastore.preferences.core.Preferences>()
-            val startTime = prefs[TimerKeys.START_TIME] ?: 0L
-            val timerDuration = TimerPreferences.getDurationMS(context)
-            // Check if timer duration has elapsed
-            val isReady = TimerUtils.isTimerExpired(startTime, timerDuration)
+            // Inside provideGlance in HRTWidget.kt:
+            val appWidgetId = androidx.glance.appwidget.GlanceAppWidgetManager(context).getAppWidgetId(id)
+            val settingsIntent = Intent(context, SettingsActivity::class.java).apply {
+                putExtra("appWidgetId", appWidgetId)
+            }
 
-            // Read from Glance state, fallback to preferences if empty
-            val medicineName = prefs[TimerKeys.MEDICINE_NAME] ?: TimerPreferences.getMedicineName(context)
-            val customReadyColor = prefs[TimerKeys.READY_COLOR]?.toInt() ?: TimerPreferences.getReadyColor(context)
-            val backgroundColor = if (isReady) Color(customReadyColor) else Color(0xFF333333)
+            // Reading currentState ensures Glance actively subscribes to state changes
+            val prefs = androidx.glance.currentState<androidx.datastore.preferences.core.Preferences>()
+            val lastUpdated = prefs[TimerKeys.LAST_UPDATED] ?: 0L
+
+
+            val startTime = TimerPreferences.getStartTime(context, appWidgetId)
+            val timerDuration = TimerPreferences.getDurationMS(context, appWidgetId)
+            val medicineName = TimerPreferences.getMedicineName(context, appWidgetId)
+            val readyColor =TimerPreferences.getReadyColor(context,appWidgetId)
+
+            val isReady = TimerUtils.isTimerExpired(context,appWidgetId)
+            val backgroundColor = if (isReady) Color(readyColor) else Color(TimerPreferences.RUNNING_COLOR)
 
             //var modifier = GlanceModifier.fillMaxSize().background(backgroundColor).padding(16.dp)
-            var statusText = "$medicineName Ready\n\n(Tap to Start)"
+            var statusText: String
+
+            Log.d("hrt-widget", "Is timer expired: $isReady (Trigger: $lastUpdated)")
 
             if (!isReady) { //information text for when the timer is running and the button is disabled
                 val finishTime = startTime + timerDuration
@@ -71,9 +77,9 @@ class HRTWidget : GlanceAppWidget() {
                 val formattedDate = formatter.format(Date(finishTime))
                 statusText = "Next dose of $medicineName at:\n\n$formattedDate"
             } else {
-                // Only clickable when finished/ready
-               // modifier = modifier.clickable(actionRunCallback<ToggleTimerAction>())
+                statusText = "$medicineName Ready\n\n(Tap to Start)"
             }
+
 
             Row(
                 modifier = GlanceModifier.fillMaxSize()
@@ -104,7 +110,7 @@ class HRTWidget : GlanceAppWidget() {
                         .width(48.dp)
                         .fillMaxHeight()
                         .background(Color(0xFF222222))
-                        .clickable(actionStartActivity<SettingsActivity>()),
+                        .clickable(actionStartActivity(intent = settingsIntent)),
                     contentAlignment = Alignment.Center
                 ) { //text color
                     Text(
@@ -122,16 +128,19 @@ class HRTWidget : GlanceAppWidget() {
 
 class ToggleTimerAction : ActionCallback {
     override suspend fun onAction(context: Context, glanceId: GlanceId, parameters: ActionParameters) {
+        val appWidgetId = androidx.glance.appwidget.GlanceAppWidgetManager(context).getAppWidgetId(glanceId)
         val currentTime = System.currentTimeMillis()
-        val timerDuration = TimerPreferences.getDurationMS(context)
+        val timerDuration = TimerPreferences.getDurationMS(context, appWidgetId)
         val triggerTime = currentTime + timerDuration
 
-        updateAppWidgetState(context, glanceId) { prefs ->
-            prefs[TimerKeys.START_TIME] = currentTime
-            Log.d("HRTWidget", "Timer started at $currentTime")
+        TimerPreferences.startTimer(context, appWidgetId)
+        TimerUtils.scheduleTimerAlarm(context, triggerTime)
+
+        //Ping Glance state so it re-composes immediately
+        androidx.glance.appwidget.state.updateAppWidgetState(context, glanceId) { prefs ->
+            prefs[TimerKeys.LAST_UPDATED] = System.currentTimeMillis()
         }
 
-        TimerUtils.scheduleTimerAlarm(context, triggerTime)
         HRTWidget().update(context, glanceId)
     }
 }

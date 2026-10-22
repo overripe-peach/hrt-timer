@@ -15,82 +15,90 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.glance.appwidget.GlanceAppWidgetManager
-import androidx.glance.appwidget.state.updateAppWidgetState
 import androidx.lifecycle.lifecycleScope
 import kotlinx.coroutines.launch
 import androidx.compose.ui.graphics.Color
 import androidx.compose.foundation.clickable
+import kotlin.time.Duration.Companion.milliseconds
+
+//import androidx.core.graphics.toColor
 
 class SettingsActivity : ComponentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        val currentDays = TimerPreferences.getDurationMS(this) / (24 * 60 * 60 * 1000L)
-        val currentMedicine = TimerPreferences.getMedicineName(this)
-        val currentColor = TimerPreferences.getReadyColor(this)
+        // Retrieve the specific widget instance ID passed from the gear icon
+        val appWidgetId = intent.getIntExtra("appWidgetId", android.appwidget.AppWidgetManager.INVALID_APPWIDGET_ID)
+
+        val currentDays = TimerPreferences.getDurationDays(this, appWidgetId)
+        val currentMedicine = TimerPreferences.getMedicineName(this, appWidgetId)
+        val currentColor = TimerPreferences.getReadyColor(this, appWidgetId)
+
 
         setContent {
             MaterialTheme {
                 SettingsScreen(
-                    initialColor = currentColor,
-                    onSaveColor = { newColor ->
-                        TimerPreferences.setReadyColor(this@SettingsActivity, newColor)
-                    },
-
                     initialDays = currentDays.toInt(),
                     initialMedicine = currentMedicine,
+                    initialColor = currentColor,
                     onSaveDays = { newDays ->
-                        TimerPreferences.setDurationDays(this@SettingsActivity, newDays)
+                        val durationMs = newDays * 24 * 60 * 60 * 1000L
+                        TimerPreferences.setDurationMS(this@SettingsActivity, appWidgetId, durationMs)
                         Toast.makeText(this, "Timer duration set to $newDays days", Toast.LENGTH_SHORT).show()
                     },
 
                     onSaveMedicine = { newName ->
-                        TimerPreferences.setMedicineName(this@SettingsActivity, newName)
+                        TimerPreferences.setMedicineName(this@SettingsActivity, appWidgetId, newName)
                     },
 
+                    onSaveColor = { newColor ->
+                        TimerPreferences.setReadyColor(this@SettingsActivity, appWidgetId,newColor)
+                        Toast.makeText(this, "Timer indication color set to $newColor", Toast.LENGTH_SHORT).show()
+                    },
                     onResetTimer = {
                         lifecycleScope.launch {
-                            // 1. Clear the core storage timer state
-                            TimerPreferences.resetTimer(this@SettingsActivity)
+                            // Target ONLY the specific widget instance opened via gear icon
+                            if (appWidgetId != android.appwidget.AppWidgetManager.INVALID_APPWIDGET_ID) {
+                                val glanceId = GlanceAppWidgetManager(this@SettingsActivity).getGlanceIdBy(appWidgetId)
 
-                             //Refresh the Glance widget states
-                            val glanceIds = GlanceAppWidgetManager(this@SettingsActivity)
-                                .getGlanceIds(HRTWidget::class.java)
+                                // 1. Reset your underlying timer preferences for this instance
+                                TimerPreferences.resetTimer(this@SettingsActivity, appWidgetId)
 
-                            glanceIds.forEach { glanceId ->
-                                updateAppWidgetState(this@SettingsActivity, glanceId) { prefs ->
-                                    prefs.remove(TimerKeys.START_TIME)
+                                //Ping Glance state to force a redraw
+                                androidx.glance.appwidget.state.updateAppWidgetState(this@SettingsActivity, glanceId) { prefs ->
+                                    prefs[TimerKeys.LAST_UPDATED] = System.currentTimeMillis()
                                 }
+
+                                //Update the widget UI
                                 HRTWidget().update(this@SettingsActivity, glanceId)
+                                Toast.makeText(this@SettingsActivity, "Timer Reset!", Toast.LENGTH_SHORT).show()
+                            } else {
+                                Toast.makeText(this@SettingsActivity, "Please open settings from the widget gear icon. ", Toast.LENGTH_LONG).show()
                             }
 
-                            Toast.makeText(this@SettingsActivity, "Timer reset!", Toast.LENGTH_SHORT).show()
+                            // Give Glance's session worker a fraction of a second to render
+                            // before the activity window closes and the home screen refocuses
+                            kotlinx.coroutines.delay(150.milliseconds)
 
                             finish()
                             @Suppress("DEPRECATION")
                             overridePendingTransition(0, 0)
                         }
                     },
-
                     onClose = {
                         lifecycleScope.launch {
-                            val glanceIds = GlanceAppWidgetManager(this@SettingsActivity)
-                                .getGlanceIds(HRTWidget::class.java)
+                            if (appWidgetId != android.appwidget.AppWidgetManager.INVALID_APPWIDGET_ID) {
+                                val glanceId = GlanceAppWidgetManager(this@SettingsActivity)
+                                    .getGlanceIdBy(appWidgetId)
 
-                            val currentMedicine = TimerPreferences.getMedicineName(this@SettingsActivity)
-                            val currentColor = TimerPreferences.getReadyColor(this@SettingsActivity).toLong()
-
-                            glanceIds.forEach { glanceId ->
-                                // Touch the glance state so it's forced to re-render
-                                updateAppWidgetState(this@SettingsActivity, glanceId) { prefs ->
-                                    // We can toggle or re-set the start time (or a dummy key) to force a state change
-                                    prefs[TimerKeys.MEDICINE_NAME] = currentMedicine
-                                    prefs[TimerKeys.READY_COLOR] = currentColor
+                                //Ping Glance state to force a redraw
+                                androidx.glance.appwidget.state.updateAppWidgetState(this@SettingsActivity, glanceId) { prefs ->
+                                    prefs[TimerKeys.LAST_UPDATED] = System.currentTimeMillis()
                                 }
+
                                 HRTWidget().update(this@SettingsActivity, glanceId)
                             }
-
                             finish()
                             @Suppress("DEPRECATION")
                             overridePendingTransition(0, 0)
@@ -118,8 +126,9 @@ fun SettingsScreen(
     var medicineText by remember { mutableStateOf(initialMedicine) }
 
     fun updateDays(delta: Int) {
-        val currentDays = daysText.toIntOrNull() ?: TimerPreferences.DEFAULT_DAYS
-        val newDays = (currentDays + delta).coerceAtLeast(1)
+        val currentDays =  (daysText.toIntOrNull() ?: ((TimerPreferences.DEFAULT_DURATION / (24 * 60 * 60 * 1000L)).toInt()))
+        val newDays = (currentDays + delta).coerceAtLeast(1) // Keeps minimum at 1 day
+
         daysText = newDays.toString()
         onSaveDays(newDays)
     }

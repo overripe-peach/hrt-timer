@@ -4,7 +4,7 @@ import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.util.Log
-import androidx.glance.appwidget.state.updateAppWidgetState
+//import androidx.glance.appwidget.state.updateAppWidgetState
 import androidx.glance.appwidget.updateAll
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -17,13 +17,8 @@ class TimerAlarmReceiver : BroadcastReceiver() {
         CoroutineScope(Dispatchers.IO).launch {
             try {
                 // Clear the start time in DataStore preferences so it resets to Ready / Green
-                androidx.glance.appwidget.GlanceAppWidgetManager(context)
-                    .getGlanceIds(HRTWidget::class.java)
-                    .forEach { glanceId ->
-                        updateAppWidgetState(context, glanceId) { prefs ->
-                            prefs.remove(TimerKeys.START_TIME)
-                        }
-                    }
+                val appWidgetId = intent.getIntExtra("appWidgetId", android.appwidget.AppWidgetManager.INVALID_APPWIDGET_ID)
+                TimerPreferences.resetTimer(context, appWidgetId)
 
                 // Force all widgets to update their UI
                 HRTWidget().updateAll(context)
@@ -42,35 +37,30 @@ class BootReceiver : BroadcastReceiver() {
 
             CoroutineScope(Dispatchers.IO).launch {
                 try {
-                    androidx.glance.appwidget.GlanceAppWidgetManager(context)
-                        .getGlanceIds(HRTWidget::class.java)
-                        .forEach { glanceId ->
-                            updateAppWidgetState(context, glanceId) { prefs ->
-                                val startTime = prefs[TimerKeys.START_TIME] ?: 0L
-                                val timerDuration = TimerPreferences.getDurationMS(context)
+                    val appWidgetId = intent.getIntExtra("appWidgetId", android.appwidget.AppWidgetManager.INVALID_APPWIDGET_ID)
 
-                                if (TimerUtils.isTimerExpired(startTime, timerDuration)) {
-                                    // Time already passed while off: clear state to show Ready/Green
-                                    Log.d(
-                                        "BootReceiver",
-                                        "Timer expired while device was off. Clearing state."
-                                    )
-                                    // Clear state or handle expiration
-                                    prefs.remove(TimerKeys.START_TIME)
-                                } else {
-                                    // 2. Timer is still running: RE-REGISTER the AlarmManager!
+                    // Time already passed while off: clear state to show Ready/Green
+                    if (TimerUtils.isTimerExpired(context,appWidgetId)) {
+                        Log.d(
+                            "BootReceiver",
+                            "Timer expired while device was off. Clearing state."
+                        )
+                        // Clear state or handle expiration
+                        TimerPreferences.resetTimer(context,appWidgetId)
 
-                                    val finishTime = startTime + timerDuration
-                                    Log.d(
-                                        "BootReceiver",
-                                        "Timer still active. Rescheduling alarm for target time: $finishTime"
-                                    )
+                    } else {
+                        // Timer is still running: RE-REGISTER the AlarmManager!
 
-                                    // Reschedule using the exact same centralized function!
-                                    TimerUtils.scheduleTimerAlarm(context, finishTime)
-                                } //end of TimerUtils.isExpired()
-                            }
-                        }
+                        val finishTime = TimerUtils.getFinishTime(context,appWidgetId)
+                        Log.d(
+                            "BootReceiver",
+                            "Timer still active. Rescheduling alarm for target time: $finishTime"
+                        )
+
+                        // Reschedule using the exact same centralized function!
+                        TimerUtils.scheduleTimerAlarm(context, finishTime)
+                    } //end of TimerUtils.isExpired()
+
                         // Update all widgets so they reflect the correct state immediately post-boot
                         HRTWidget().updateAll(context)
                     } catch (e: Exception) {
