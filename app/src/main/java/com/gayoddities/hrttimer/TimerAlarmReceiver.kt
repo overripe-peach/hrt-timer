@@ -30,41 +30,56 @@ class TimerAlarmReceiver : BroadcastReceiver() {
     }
 }
 
-class BootReceiver : BroadcastReceiver() {
+class RescheduleReceiver : BroadcastReceiver() {
     override fun onReceive(context: Context, intent: Intent) {
-        if (intent.action == Intent.ACTION_BOOT_COMPLETED) {
-            Log.d("BootReceiver", "Device rebooted. Re-evaluating and rescheduling active timers...")
+        if (intent.action == Intent.ACTION_MY_PACKAGE_REPLACED || intent.action == Intent.ACTION_BOOT_COMPLETED) {
+            if (intent.action == Intent.ACTION_BOOT_COMPLETED) {
+                Log.d(
+                    "BootReceiver",
+                    "Device rebooted. Re-evaluating and rescheduling active timers..."
+                )
+            } else if (intent.action == Intent.ACTION_MY_PACKAGE_REPLACED) {
+                Log.d(
+                    "BootReceiver",
+                    "HRT Widget Updated. Re-evaluating and rescheduling active timers..."
+                )
+            }
+
+            val pendingResult = goAsync()
 
             CoroutineScope(Dispatchers.IO).launch {
                 try {
-                    val appWidgetId = intent.getIntExtra("appWidgetId", android.appwidget.AppWidgetManager.INVALID_APPWIDGET_ID)
+                    // 1. Get ALL active widget instances using Glance
+                    val manager = androidx.glance.appwidget.GlanceAppWidgetManager(context)
+                    val glanceIds = manager.getGlanceIds(HRTWidget::class.java)
 
-                    // Time already passed while off: clear state to show Ready/Green
-                    if (TimerUtils.isTimerExpired(context,appWidgetId)) {
-                        Log.d(
-                            "BootReceiver",
-                            "Timer expired while device was off. Clearing state."
-                        )
-                        // Clear state or handle expiration
-                        TimerPreferences.resetTimer(context,appWidgetId)
+                    for (glanceId in glanceIds) {
+                        val appWidgetId = manager.getAppWidgetId(glanceId)
 
-                    } else {
-                        // Timer is still running: RE-REGISTER the AlarmManager!
+                        // 2. Evaluate each widget instance independently
+                        if (TimerUtils.isTimerExpired(context, appWidgetId)) {
+                            Log.d(
+                                "BootReceiver",
+                                "Timer expired for widget ID $appWidgetId while off/updating. Clearing state."
+                            )
+                            TimerPreferences.resetTimer(context, appWidgetId)
+                        } else {
+                            val finishTime = TimerUtils.getFinishTime(context, appWidgetId)
+                            Log.d(
+                                "BootReceiver",
+                                "Timer still active for widget ID $appWidgetId. Rescheduling alarm for target time: $finishTime"
+                            )
+                            TimerUtils.scheduleTimerAlarm(context, finishTime)
+                        }
+                    }
 
-                        val finishTime = TimerUtils.getFinishTime(context,appWidgetId)
-                        Log.d(
-                            "BootReceiver",
-                            "Timer still active. Rescheduling alarm for target time: $finishTime"
-                        )
+                    // 3. Update all widgets so they reflect the correct state immediately
+                    HRTWidget().updateAll(context)
 
-                        // Reschedule using the exact same centralized function!
-                        TimerUtils.scheduleTimerAlarm(context, finishTime)
-                    } //end of TimerUtils.isExpired()
-
-                        // Update all widgets so they reflect the correct state immediately post-boot
-                        HRTWidget().updateAll(context)
-                    } catch (e: Exception) {
-                    Log.e("BootReceiver", "Failed to reschedule alarm on boot", e)
+                } catch (e: Exception) {
+                    Log.e("BootReceiver", "Failed to reschedule alarms on boot/update", e)
+                } finally {
+                    pendingResult.finish()
                 }
             }
         }
