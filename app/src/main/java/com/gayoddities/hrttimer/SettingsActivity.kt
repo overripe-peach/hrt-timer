@@ -19,7 +19,8 @@ import androidx.lifecycle.lifecycleScope
 import kotlinx.coroutines.launch
 import androidx.compose.ui.graphics.Color
 import androidx.compose.foundation.clickable
-import kotlin.time.Duration.Companion.milliseconds
+//import androidx.glance.GlanceId
+//import kotlin.time.Duration.Companion.milliseconds
 
 //import androidx.core.graphics.toColor
 
@@ -62,16 +63,17 @@ class SettingsActivity : ComponentActivity() {
                             if (appWidgetId != android.appwidget.AppWidgetManager.INVALID_APPWIDGET_ID) {
                                 val glanceId = GlanceAppWidgetManager(this@SettingsActivity).getGlanceIdBy(appWidgetId)
 
-                                // 1. Reset your underlying timer preferences for this instance
-                                TimerPreferences.resetTimer(this@SettingsActivity, appWidgetId)
-
                                 //Ping Glance state to force a redraw
                                 androidx.glance.appwidget.state.updateAppWidgetState(this@SettingsActivity, glanceId) { prefs ->
                                     prefs[TimerKeys.LAST_UPDATED] = System.currentTimeMillis()
                                 }
 
+                                //Reset your underlying timer preferences for this instance
+                                TimerPreferences.resetTimer(this@SettingsActivity, appWidgetId)
+
                                 //Update the widget UI
                                 HRTWidget().update(this@SettingsActivity, glanceId)
+
                                 Toast.makeText(this@SettingsActivity, "Timer Reset!", Toast.LENGTH_SHORT).show()
                             } else {
                                 Toast.makeText(this@SettingsActivity, "Please open settings from the widget gear icon. ", Toast.LENGTH_LONG).show()
@@ -79,7 +81,7 @@ class SettingsActivity : ComponentActivity() {
 
                             // Give Glance's session worker a fraction of a second to render
                             // before the activity window closes and the home screen refocuses
-                            kotlinx.coroutines.delay(150.milliseconds)
+                            //kotlinx.coroutines.delay(150.milliseconds)
 
                             finish()
                             @Suppress("DEPRECATION")
@@ -89,7 +91,7 @@ class SettingsActivity : ComponentActivity() {
                     onClose = {
                         lifecycleScope.launch {
                             if (appWidgetId != android.appwidget.AppWidgetManager.INVALID_APPWIDGET_ID) {
-                                val glanceId = GlanceAppWidgetManager(this@SettingsActivity)
+                               val glanceId = GlanceAppWidgetManager(this@SettingsActivity)
                                     .getGlanceIdBy(appWidgetId)
 
                                 //Ping Glance state to force a redraw
@@ -99,6 +101,11 @@ class SettingsActivity : ComponentActivity() {
 
                                 HRTWidget().update(this@SettingsActivity, glanceId)
                             }
+
+                            // Give Glance's session worker a fraction of a second to render
+                            // before the activity window closes and the home screen refocuses
+                            //kotlinx.coroutines.delay(150.milliseconds)
+
                             finish()
                             @Suppress("DEPRECATION")
                             overridePendingTransition(0, 0)
