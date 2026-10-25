@@ -24,6 +24,7 @@ object TimerPreferences {
     const val DEFAULT_MEDICINE_NAME = "HRT"
     const val RUNNING_COLOR = 0xFF333333.toInt()
     const val DAYS_MS = 24 * 60 * 60 * 1000L //or 86,400,000
+    const val HOUR_MS = 60 * 60 * 1000L //or 3,600,000
 
     /**
      * Returns a SharedPreferences instance scoped to a specific widget instance ID if provided,

@@ -105,7 +105,8 @@ fun SettingsScreen(
     onClose: () -> Unit
 ) {
     // Determine initial state based on whether stored ms is less than 24 hours
-    val oneDayMs = 24L * 60L * 60L * 1000L
+    val oneHourMS = TimerPreferences.HOUR_MS
+    val oneDayMs = TimerPreferences.DAYS_MS
     val startingInHours = initialDurationMs < oneDayMs
 
     var isHoursUnit by remember { mutableStateOf(startingInHours) }
@@ -121,9 +122,9 @@ fun SettingsScreen(
 
     fun persistDuration(value: Int, inHours: Boolean) {
         val durationMs = if (inHours) {
-            value * 60L * 60L * 1000L
+            value * oneHourMS
         } else {
-            value * 24L * 60L * 60L * 1000L
+            value * oneDayMs
         }
         onSaveDuration(durationMs)
     }
