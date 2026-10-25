@@ -19,69 +19,50 @@ import androidx.lifecycle.lifecycleScope
 import kotlinx.coroutines.launch
 import androidx.compose.ui.graphics.Color
 import androidx.compose.foundation.clickable
-//import androidx.glance.GlanceId
-//import kotlin.time.Duration.Companion.milliseconds
-
-//import androidx.core.graphics.toColor
 
 class SettingsActivity : ComponentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        // Retrieve the specific widget instance ID passed from the gear icon
         val appWidgetId = intent.getIntExtra("appWidgetId", android.appwidget.AppWidgetManager.INVALID_APPWIDGET_ID)
 
-        val currentDays = TimerPreferences.getDurationDays(this, appWidgetId)
-        val currentMedicine = TimerPreferences.getMedicineName(this, appWidgetId)
-        val currentColor = TimerPreferences.getReadyColor(this, appWidgetId)
-
+        val currentMedicine = TimerPreferences.getMedicineName(this@SettingsActivity, appWidgetId)
+        val currentColor = TimerPreferences.getReadyColor(this@SettingsActivity, appWidgetId)
+        val currentDurationMs = TimerPreferences.getDurationMS(this@SettingsActivity, appWidgetId)
 
         setContent {
             MaterialTheme {
                 SettingsScreen(
-                    initialDays = currentDays.toInt(),
+                    initialDurationMs = currentDurationMs,
                     initialMedicine = currentMedicine,
                     initialColor = currentColor,
-                    onSaveDays = { newDays ->
-                        val durationMs = newDays * 24 * 60 * 60 * 1000L
+                    onSaveDuration = { durationMs ->
                         TimerPreferences.setDurationMS(this@SettingsActivity, appWidgetId, durationMs)
-                        Toast.makeText(this, "Timer duration set to $newDays days", Toast.LENGTH_SHORT).show()
                     },
-
                     onSaveMedicine = { newName ->
                         TimerPreferences.setMedicineName(this@SettingsActivity, appWidgetId, newName)
                     },
-
                     onSaveColor = { newColor ->
-                        TimerPreferences.setReadyColor(this@SettingsActivity, appWidgetId,newColor)
+                        TimerPreferences.setReadyColor(this@SettingsActivity, appWidgetId, newColor)
                         Toast.makeText(this, "Timer indication color set to $newColor", Toast.LENGTH_SHORT).show()
                     },
                     onResetTimer = {
                         lifecycleScope.launch {
-                            // Target ONLY the specific widget instance opened via gear icon
                             if (appWidgetId != android.appwidget.AppWidgetManager.INVALID_APPWIDGET_ID) {
                                 val glanceId = GlanceAppWidgetManager(this@SettingsActivity).getGlanceIdBy(appWidgetId)
 
-                                //Ping Glance state to force a redraw
                                 androidx.glance.appwidget.state.updateAppWidgetState(this@SettingsActivity, glanceId) { prefs ->
                                     prefs[TimerKeys.LAST_UPDATED] = System.currentTimeMillis()
                                 }
 
-                                //Reset your underlying timer preferences for this instance
                                 TimerPreferences.resetTimer(this@SettingsActivity, appWidgetId)
-
-                                //Update the widget UI
                                 HRTWidget().update(this@SettingsActivity, glanceId)
 
                                 Toast.makeText(this@SettingsActivity, "Timer Reset!", Toast.LENGTH_SHORT).show()
                             } else {
-                                Toast.makeText(this@SettingsActivity, "Please open settings from the widget gear icon. ", Toast.LENGTH_LONG).show()
+                                Toast.makeText(this@SettingsActivity, "Please open settings from the widget gear icon.", Toast.LENGTH_LONG).show()
                             }
-
-                            // Give Glance's session worker a fraction of a second to render
-                            // before the activity window closes and the home screen refocuses
-                            //kotlinx.coroutines.delay(150.milliseconds)
 
                             finish()
                             @Suppress("DEPRECATION")
@@ -91,20 +72,14 @@ class SettingsActivity : ComponentActivity() {
                     onClose = {
                         lifecycleScope.launch {
                             if (appWidgetId != android.appwidget.AppWidgetManager.INVALID_APPWIDGET_ID) {
-                               val glanceId = GlanceAppWidgetManager(this@SettingsActivity)
-                                    .getGlanceIdBy(appWidgetId)
+                                val glanceId = GlanceAppWidgetManager(this@SettingsActivity).getGlanceIdBy(appWidgetId)
 
-                                //Ping Glance state to force a redraw
                                 androidx.glance.appwidget.state.updateAppWidgetState(this@SettingsActivity, glanceId) { prefs ->
                                     prefs[TimerKeys.LAST_UPDATED] = System.currentTimeMillis()
                                 }
 
                                 HRTWidget().update(this@SettingsActivity, glanceId)
                             }
-
-                            // Give Glance's session worker a fraction of a second to render
-                            // before the activity window closes and the home screen refocuses
-                            //kotlinx.coroutines.delay(150.milliseconds)
 
                             finish()
                             @Suppress("DEPRECATION")
@@ -118,26 +93,72 @@ class SettingsActivity : ComponentActivity() {
 }
 
 @Composable
-@Suppress("UNUSED_PARAMETER")
 fun SettingsScreen(
-    initialDays: Int,
+    initialDurationMs: Long,
     initialMedicine: String,
+    @Suppress("UNUSED_PARAMETER") //why TF is this required?
     initialColor: Int,
-    onSaveDays: (Int) -> Unit,
+    onSaveDuration: (Long) -> Unit,
     onSaveMedicine: (String) -> Unit,
     onSaveColor: (Int) -> Unit,
     onResetTimer: () -> Unit,
     onClose: () -> Unit
 ) {
-    var daysText by remember { mutableStateOf(initialDays.toString()) }
+    // Determine initial state based on whether stored ms is less than 24 hours
+    val oneDayMs = 24L * 60L * 60L * 1000L
+    val startingInHours = initialDurationMs < oneDayMs
+
+    var isHoursUnit by remember { mutableStateOf(startingInHours) }
+
+    val initialDisplayValue = if (startingInHours) {
+        maxOf(1L, initialDurationMs / (60L * 60L * 1000L)).toString()
+    } else {
+        maxOf(1L, initialDurationMs / oneDayMs).toString()
+    }
+
+    var durationText by remember { mutableStateOf(initialDisplayValue) }
     var medicineText by remember { mutableStateOf(initialMedicine) }
 
-    fun updateDays(delta: Int) {
-        val currentDays =  (daysText.toIntOrNull() ?: ((TimerPreferences.DEFAULT_DURATION / (24 * 60 * 60 * 1000L)).toInt()))
-        val newDays = (currentDays + delta).coerceAtLeast(1) // Keeps minimum at 1 day
+    fun persistDuration(value: Int, inHours: Boolean) {
+        val durationMs = if (inHours) {
+            value * 60L * 60L * 1000L
+        } else {
+            value * 24L * 60L * 60L * 1000L
+        }
+        onSaveDuration(durationMs)
+    }
 
-        daysText = newDays.toString()
-        onSaveDays(newDays)
+    fun updateDuration(delta: Int) {
+        val currentValue = durationText.toIntOrNull() ?: 1
+
+        if (!isHoursUnit) {
+            // Currently in Days
+            val newDays = currentValue + delta
+            if (newDays < 1) {
+                // Switch to Hours starting at 23
+                isHoursUnit = true
+                durationText = "23"
+                persistDuration(23, true)
+            } else {
+                durationText = newDays.toString()
+                persistDuration(newDays, false)
+            }
+        } else {
+            // Currently in Hours
+            val newHours = currentValue + delta
+            if (newHours > 23) {
+                // Switch back to Days starting at 1
+                isHoursUnit = false
+                durationText = "1"
+                persistDuration(1, false)
+            } else if (newHours < 1) {
+                durationText = "1"
+                persistDuration(1, true)
+            } else {
+                durationText = newHours.toString()
+                persistDuration(newHours, true)
+            }
+        }
     }
 
     Surface(
@@ -173,8 +194,9 @@ fun SettingsScreen(
 
             Spacer(modifier = Modifier.height(24.dp))
 
+            // Dynamic Unit Label
             Text(
-                text = "Timer Duration (Days)",
+                text = if (isHoursUnit) "Timer Duration (Hours)" else "Timer Duration (Days)",
                 fontSize = 14.sp,
                 fontWeight = FontWeight.Medium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
@@ -182,15 +204,16 @@ fun SettingsScreen(
 
             Spacer(modifier = Modifier.height(8.dp))
 
-            /////UPDATE TIMER DURATION + / - BUTTONS ////
+            ///// UPDATE TIMER DURATION + / - BUTTONS ////
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(56.dp),
                 verticalAlignment = Alignment.CenterVertically
-            ) { //- BUTTON ON LEFT
+            ) {
+                // - BUTTON ON LEFT
                 Button(
-                    onClick = { updateDays(-1) },
+                    onClick = { updateDuration(-1) },
                     modifier = Modifier.weight(1f).fillMaxHeight(),
                     shape = androidx.compose.foundation.shape.RoundedCornerShape(
                         topStart = 8.dp, bottomStart = 8.dp, topEnd = 0.dp, bottomEnd = 0.dp
@@ -202,12 +225,13 @@ fun SettingsScreen(
                 ) {
                     Text("-", fontSize = 22.sp, fontWeight = FontWeight.Bold)
                 }
-                //DURATION DAYS TEXT BOX
+
+                // DURATION TEXT BOX
                 OutlinedTextField(
-                    value = daysText,
+                    value = durationText,
                     onValueChange = { newValue ->
-                        daysText = newValue
-                        newValue.toIntOrNull()?.let { onSaveDays(it) }
+                        durationText = newValue
+                        newValue.toIntOrNull()?.let { persistDuration(it, isHoursUnit) }
                     },
                     modifier = Modifier.weight(2f).fillMaxHeight(),
                     textStyle = LocalTextStyle.current.copy(
@@ -219,9 +243,10 @@ fun SettingsScreen(
                     singleLine = true,
                     shape = androidx.compose.foundation.shape.RoundedCornerShape(0.dp)
                 )
-                //+ DURATION DAYS BUTTON ON RIGHT
+
+                // + BUTTON ON RIGHT
                 Button(
-                    onClick = { updateDays(1) },
+                    onClick = { updateDuration(1) },
                     modifier = Modifier.weight(1f).fillMaxHeight(),
                     shape = androidx.compose.foundation.shape.RoundedCornerShape(
                         topStart = 0.dp, bottomStart = 0.dp, topEnd = 8.dp, bottomEnd = 8.dp
@@ -235,8 +260,8 @@ fun SettingsScreen(
                 }
             }
             Spacer(modifier = Modifier.height(24.dp))
-            ////END OF DURATION DAYS INPUT CODE ///////
-            ////READY STATE COLOR PICKER CODE////
+
+            // Ready State Color Picker
             Text(
                 text = "Ready State Color",
                 fontSize = 14.sp,
@@ -246,7 +271,6 @@ fun SettingsScreen(
 
             Spacer(modifier = Modifier.height(8.dp))
 
-            // Preset color options row
             val presetColors = listOf(
                 0xFF4CAF50, // Green
                 0xFF2196F3, // Blue
@@ -271,7 +295,6 @@ fun SettingsScreen(
                 }
             }
             Spacer(modifier = Modifier.height(28.dp))
-            ////END OF READY STATE COLOR PICKER CODE////
 
             // Reset Timer Button
             Button(

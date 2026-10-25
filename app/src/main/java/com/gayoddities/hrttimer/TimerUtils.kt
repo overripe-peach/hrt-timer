@@ -27,7 +27,7 @@ object TimerUtils {
     fun isTimerExpired(context: Context, appWidgetId: Int) : Boolean {
         val currentTime = System.currentTimeMillis()
         val startTime = TimerPreferences.getStartTime(context,appWidgetId)
-        val duration = TimerPreferences.getDurationMS(context, appWidgetId)
+        val duration = TimerPreferences.getCurrentTimerDurationMS(context, appWidgetId)
         return isTimerExpired(startTime, duration, currentTime)
     }
 
@@ -47,7 +47,7 @@ object TimerUtils {
     fun getRemainingTime(context: Context, appWidgetId: Int): Long {
         val startTime = TimerPreferences.getStartTime(context, appWidgetId)
         val currentTime = System.currentTimeMillis()
-        val duration = TimerPreferences.getDurationMS(context, appWidgetId)
+        val duration = TimerPreferences.getCurrentTimerDurationMS(context, appWidgetId)
         return getRemainingTime(startTime, duration, currentTime)
     }
 

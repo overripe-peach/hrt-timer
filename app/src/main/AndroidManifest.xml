@@ -29,7 +29,7 @@
         <!-- The Alarm Receiver -->
         <receiver android:name=".TimerAlarmReceiver" android:exported="false" />
 
-        <!--Phone Reboot detection reciever -->
+        <!--Phone Reboot detection receiver -->
         <receiver
             android:name=".RescheduleReceiver"
             android:exported="true">

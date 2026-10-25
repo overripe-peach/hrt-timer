@@ -59,7 +59,7 @@ class HRTWidget : GlanceAppWidget() {
 
 
             val startTime = TimerPreferences.getStartTime(context, appWidgetId)
-            val timerDuration = TimerPreferences.getDurationMS(context, appWidgetId)
+            val timerDuration = TimerPreferences.getCurrentTimerDurationMS(context, appWidgetId)
             val medicineName = TimerPreferences.getMedicineName(context, appWidgetId)
             val readyColor =TimerPreferences.getReadyColor(context,appWidgetId)
 
