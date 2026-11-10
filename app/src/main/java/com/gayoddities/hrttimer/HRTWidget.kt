@@ -46,6 +46,12 @@ class HRTWidget : GlanceAppWidget() {
 
     @SuppressLint("NonObservableLocale")
     override suspend fun provideGlance(context: Context, id: GlanceId) {
+        // Evaluate state or fallback cleanly BEFORE calling provideContent / composables
+        val lastUpdated = runCatching {
+            // If you need preferences here, or fallback to current time
+            System.currentTimeMillis()
+        }.getOrDefault(System.currentTimeMillis())
+
         provideContent {
             // Inside provideGlance in HRTWidget.kt:
             val appWidgetId = androidx.glance.appwidget.GlanceAppWidgetManager(context).getAppWidgetId(id)
@@ -53,10 +59,10 @@ class HRTWidget : GlanceAppWidget() {
                 putExtra("appWidgetId", appWidgetId)
             }
 
+
             // Reading currentState ensures Glance actively subscribes to state changes
             val prefs = androidx.glance.currentState<androidx.datastore.preferences.core.Preferences>()
-            val lastUpdated = prefs[TimerKeys.LAST_UPDATED] ?: 0L
-
+            val currentLastUpdated = prefs[TimerKeys.LAST_UPDATED] ?: lastUpdated
 
             val startTime = TimerPreferences.getStartTime(context, appWidgetId)
             val timerDuration = TimerPreferences.getCurrentTimerDurationMS(context, appWidgetId)
@@ -69,7 +75,7 @@ class HRTWidget : GlanceAppWidget() {
             //var modifier = GlanceModifier.fillMaxSize().background(backgroundColor).padding(16.dp)
             var statusText: String
 
-            Log.d("hrt-widget", "Is timer expired: $isReady (Trigger: $lastUpdated)")
+            Log.d("hrt-widget", "Is timer expired: $isReady (Trigger: $currentLastUpdated)")
 
             if (!isReady) { //information text for when the timer is running and the button is disabled
                 val finishTime = startTime + timerDuration

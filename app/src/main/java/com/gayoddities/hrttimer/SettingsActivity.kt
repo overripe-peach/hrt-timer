@@ -96,7 +96,6 @@ class SettingsActivity : ComponentActivity() {
 fun SettingsScreen(
     initialDurationMs: Long,
     initialMedicine: String,
-    @Suppress("UNUSED_PARAMETER") //why TF is this required?
     initialColor: Int,
     onSaveDuration: (Long) -> Unit,
     onSaveMedicine: (String) -> Unit,
@@ -104,62 +103,93 @@ fun SettingsScreen(
     onResetTimer: () -> Unit,
     onClose: () -> Unit
 ) {
-    // Determine initial state based on whether stored ms is less than 24 hours
-    val oneHourMS = TimerPreferences.HOUR_MS
-    val oneDayMs = TimerPreferences.DAYS_MS
-    val startingInHours = initialDurationMs < oneDayMs
+    val oneHourMs = 60L * 60L * 1000L
+    val oneDayMs = 24L * oneHourMs
 
-    var isHoursUnit by remember { mutableStateOf(startingInHours) }
+    // Determine initial unit tier based on stored milliseconds
+    val unitTier = when {
+        initialDurationMs < oneHourMs -> "MINUTES"
+        initialDurationMs < oneDayMs -> "HOURS"
+        else -> "DAYS"
+    }
 
-    val initialDisplayValue = if (startingInHours) {
-        maxOf(1L, initialDurationMs / (60L * 60L * 1000L)).toString()
-    } else {
-        maxOf(1L, initialDurationMs / oneDayMs).toString()
+    var currentTier by remember { mutableStateOf(unitTier) } // "DAYS", "HOURS", or "MINUTES"
+
+    val initialDisplayValue = when (currentTier) {
+        "MINUTES" -> maxOf(1L, initialDurationMs / (60L * 1000L)).toString()
+        "HOURS" -> maxOf(1L, initialDurationMs / oneHourMs).toString()
+        else -> maxOf(1L, initialDurationMs / oneDayMs).toString()
     }
 
     var durationText by remember { mutableStateOf(initialDisplayValue) }
     var medicineText by remember { mutableStateOf(initialMedicine) }
 
-    fun persistDuration(value: Int, inHours: Boolean) {
-        val durationMs = if (inHours) {
-            value * oneHourMS
-        } else {
-            value * oneDayMs
+    fun persistDuration(value: Int, tier: String) {
+        val durationMs = when (tier) {
+            "MINUTES" -> value * 60L * 1000L
+            "HOURS" -> value * oneHourMs
+            else -> value * oneDayMs
         }
         onSaveDuration(durationMs)
     }
 
     fun updateDuration(delta: Int) {
         val currentValue = durationText.toIntOrNull() ?: 1
+        val newValue = currentValue + delta
 
-        if (!isHoursUnit) {
-            // Currently in Days
-            val newDays = currentValue + delta
-            if (newDays < 1) {
-                // Switch to Hours starting at 23
-                isHoursUnit = true
-                durationText = "23"
-                persistDuration(23, true)
-            } else {
-                durationText = newDays.toString()
-                persistDuration(newDays, false)
+        when (currentTier) {
+            "DAYS" -> {
+                if (newValue < 1) {
+                    // Switch from Days down to Hours (starting at 23)
+                    currentTier = "HOURS"
+                    durationText = "23"
+                    persistDuration(23, "HOURS")
+                } else {
+                    durationText = newValue.toString()
+                    persistDuration(newValue, "DAYS")
+                }
             }
-        } else {
-            // Currently in Hours
-            val newHours = currentValue + delta
-            if (newHours > 23) {
-                // Switch back to Days starting at 1
-                isHoursUnit = false
-                durationText = "1"
-                persistDuration(1, false)
-            } else if (newHours < 1) {
-                durationText = "1"
-                persistDuration(1, true)
-            } else {
-                durationText = newHours.toString()
-                persistDuration(newHours, true)
+
+            "HOURS" -> {
+                if (newValue > 23) {
+                    // Switch from Hours up to Days (starting at 1)
+                    currentTier = "DAYS"
+                    durationText = "1"
+                    persistDuration(1, "DAYS")
+                } else if (newValue < 1) {
+                    // Switch from Hours down to Minutes (starting at 59)
+                    currentTier = "MINUTES"
+                    durationText = "59"
+                    persistDuration(59, "MINUTES")
+                } else {
+                    durationText = newValue.toString()
+                    persistDuration(newValue, "HOURS")
+                }
+            }
+
+            "MINUTES" -> {
+                if (newValue > 59) {
+                    // Switch from Minutes up to Hours (starting at 1)
+                    currentTier = "HOURS"
+                    durationText = "1"
+                    persistDuration(1, "HOURS")
+                } else if (newValue < 1) {
+                    // Minimum clamp at 1 minute
+                    durationText = "1"
+                    persistDuration(1, "MINUTES")
+                } else {
+                    durationText = newValue.toString()
+                    persistDuration(newValue, "MINUTES")
+                }
             }
         }
+    }
+
+    // Dynamic label text based on active tier
+    val tierLabelText = when (currentTier) {
+        "MINUTES" -> "Timer Duration (Minutes)"
+        "HOURS" -> "Timer Duration (Hours)"
+        else -> "Timer Duration (Days)"
     }
 
     Surface(
@@ -197,7 +227,7 @@ fun SettingsScreen(
 
             // Dynamic Unit Label
             Text(
-                text = if (isHoursUnit) "Timer Duration (Hours)" else "Timer Duration (Days)",
+                text = tierLabelText,
                 fontSize = 14.sp,
                 fontWeight = FontWeight.Medium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
@@ -232,7 +262,7 @@ fun SettingsScreen(
                     value = durationText,
                     onValueChange = { newValue ->
                         durationText = newValue
-                        newValue.toIntOrNull()?.let { persistDuration(it, isHoursUnit) }
+                        newValue.toIntOrNull()?.let { persistDuration(it, currentTier) }
                     },
                     modifier = Modifier.weight(2f).fillMaxHeight(),
                     textStyle = LocalTextStyle.current.copy(
