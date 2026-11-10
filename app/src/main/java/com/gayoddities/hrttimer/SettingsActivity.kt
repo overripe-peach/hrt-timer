@@ -103,8 +103,9 @@ fun SettingsScreen(
     onResetTimer: () -> Unit,
     onClose: () -> Unit
 ) {
-    val oneHourMs = 60L * 60L * 1000L
-    val oneDayMs = 24L * oneHourMs
+    val oneHourMs = TimerPreferences.HOUR_MS
+    val oneDayMs = TimerPreferences.DAYS_MS
+    val oneMinMS = TimerPreferences.MINUTE_MS
 
     // Determine initial unit tier based on stored milliseconds
     val unitTier = when {
@@ -116,7 +117,7 @@ fun SettingsScreen(
     var currentTier by remember { mutableStateOf(unitTier) } // "DAYS", "HOURS", or "MINUTES"
 
     val initialDisplayValue = when (currentTier) {
-        "MINUTES" -> maxOf(1L, initialDurationMs / (60L * 1000L)).toString()
+        "MINUTES" -> maxOf(1L, initialDurationMs / oneMinMS).toString()
         "HOURS" -> maxOf(1L, initialDurationMs / oneHourMs).toString()
         else -> maxOf(1L, initialDurationMs / oneDayMs).toString()
     }
@@ -126,7 +127,7 @@ fun SettingsScreen(
 
     fun persistDuration(value: Int, tier: String) {
         val durationMs = when (tier) {
-            "MINUTES" -> value * 60L * 1000L
+            "MINUTES" -> value * oneMinMS
             "HOURS" -> value * oneHourMs
             else -> value * oneDayMs
         }
