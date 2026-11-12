@@ -15,11 +15,11 @@ Repo: https://github.com/overripe-peach/hrt-timer.git
 
 Builds:
   - versionName: 0.66.5
-    versionCode: 5
+    versionCode: 6
     commit: 1ed693159f66f901c30d3c48f2ce15d7fd0d8f32
 
 AutoUpdateMode: Version
 UpdateCheckMode: Tags
 
 CurrentVersion: 0.66.5
-CurrentVersionCode: 5
+CurrentVersionCode: 6
