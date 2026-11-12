@@ -1,0 +1,5 @@
+.66.5 is the first fully functioning version.
+
+-timer persistence over reboots and app updates has been tested and is functional
+-timer duration can be set in minutes, hours, or days
+-lots of general code clean up
