@@ -1,1 +1,1 @@
-A medicine dose timer designed for people on HRT.
+A medicine dose timer designed for people on an HRT regiment.
