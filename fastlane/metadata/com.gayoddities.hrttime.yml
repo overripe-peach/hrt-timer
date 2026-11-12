@@ -1,0 +1,25 @@
+Categories:
+  - Health
+
+License: GNU GPL V3
+
+AuthorName: Riley Nightingale
+
+SourceCode: https://github.com/overripe-peach/hrt-timer
+IssueTracker: https://github.com/overripe-peach/hrt-timer/issues
+
+AutoName: HRT Timer
+
+RepoType: git
+Repo: https://github.com/overripe-peach/hrt-timer.git
+
+Builds:
+  - versionName: 0.66.5
+    versionCode: 5
+    commit: FULL_COMMIT_HASH
+
+AutoUpdateMode: Version
+UpdateCheckMode: Tags
+
+CurrentVersion: 0.66.5
+CurrentVersionCode: 5
