@@ -35,6 +35,9 @@ import androidx.glance.layout.Box
 import androidx.glance.layout.fillMaxHeight
 import androidx.glance.state.GlanceStateDefinition
 import androidx.glance.state.PreferencesGlanceStateDefinition
+import androidx.glance.layout.Spacer
+import androidx.glance.layout.height
+//import androidx.compose.ui.unit.sp
 
 object TimerKeys {
     var LAST_UPDATED = longPreferencesKey("last_updated")
@@ -46,38 +49,35 @@ class HRTWidget : GlanceAppWidget() {
 
     @SuppressLint("NonObservableLocale")
     override suspend fun provideGlance(context: Context, id: GlanceId) {
-        // Evaluate state or fallback cleanly BEFORE calling provideContent / composables
         val lastUpdated = runCatching {
-            // If you need preferences here, or fallback to current time
             System.currentTimeMillis()
         }.getOrDefault(System.currentTimeMillis())
 
         provideContent {
-            // Inside provideGlance in HRTWidget.kt:
             val appWidgetId = androidx.glance.appwidget.GlanceAppWidgetManager(context).getAppWidgetId(id)
             val settingsIntent = Intent(context, SettingsActivity::class.java).apply {
                 putExtra("appWidgetId", appWidgetId)
             }
 
-
-            // Reading currentState ensures Glance actively subscribes to state changes
             val prefs = androidx.glance.currentState<androidx.datastore.preferences.core.Preferences>()
             val currentLastUpdated = prefs[TimerKeys.LAST_UPDATED] ?: lastUpdated
 
             val startTime = TimerPreferences.getStartTime(context, appWidgetId)
             val timerDuration = TimerPreferences.getCurrentTimerDurationMS(context, appWidgetId)
             val medicineName = TimerPreferences.getMedicineName(context, appWidgetId)
-            val readyColor =TimerPreferences.getReadyColor(context,appWidgetId)
+            val readyColor = TimerPreferences.getReadyColor(context, appWidgetId)
 
-            val isReady = TimerUtils.isTimerExpired(context,appWidgetId)
+            // Load current streak count
+            val streakCount = TimerPreferences.getStreakCount(context, appWidgetId)
+
+            val isReady = TimerUtils.isTimerExpired(context, appWidgetId)
             val backgroundColor = if (isReady) Color(readyColor) else Color(TimerPreferences.RUNNING_COLOR)
 
-            //var modifier = GlanceModifier.fillMaxSize().background(backgroundColor).padding(16.dp)
-            var statusText: String
+            val statusText: String
 
             Log.d("hrt-widget", "Is timer expired: $isReady (Trigger: $currentLastUpdated)")
 
-            if (!isReady) { //information text for when the timer is running and the button is disabled
+            if (!isReady) {
                 val finishTime = startTime + timerDuration
                 val formatter = SimpleDateFormat("EEE, MMM d 'at' hh:mm a", Locale.getDefault())
                 val formattedDate = formatter.format(Date(finishTime))
@@ -86,21 +86,20 @@ class HRTWidget : GlanceAppWidget() {
                 statusText = "$medicineName Ready\n\n(Tap to Start)"
             }
 
-
             Row(
                 modifier = GlanceModifier.fillMaxSize()
             ) {
                 // Main Timer Column
                 Column(
                     modifier = GlanceModifier
-                        .defaultWeight() // Add this so it shares space with the gear button
+                        .defaultWeight()
                         .fillMaxHeight()
                         .background(backgroundColor)
                         .padding(16.dp)
                         .let { if (isReady) it.clickable(actionRunCallback<ToggleTimerAction>()) else it },
                     verticalAlignment = Alignment.Vertical.CenterVertically,
                     horizontalAlignment = Alignment.Horizontal.CenterHorizontally
-                ) {  //text formatting for timer area of widget
+                ) {
                     Text(
                         text = statusText,
                         style = TextStyle(
@@ -108,9 +107,20 @@ class HRTWidget : GlanceAppWidget() {
                             fontWeight = FontWeight.Bold
                         )
                     )
+
+                    if (TimerPreferences.getStreakWindowMS(context,appWidgetId) >0 ) {
+                        Spacer(modifier = GlanceModifier.height(70.dp))
+                        Text(
+                            text = "🔥 Streak: $streakCount",
+                            style = TextStyle(
+                                color = ColorProvider(day = Color.Yellow, night = Color.Yellow),
+                                fontWeight = FontWeight.Bold
+                            )
+                        )
+                    }
                 }
 
-                //Visual layout for Settings Gear Button Area
+                // Visual layout for Settings Gear Button Area
                 Box(
                     modifier = GlanceModifier
                         .width(48.dp)
@@ -118,7 +128,7 @@ class HRTWidget : GlanceAppWidget() {
                         .background(Color(0xFF222222))
                         .clickable(actionStartActivity(intent = settingsIntent)),
                     contentAlignment = Alignment.Center
-                ) { //text color
+                ) {
                     Text(
                         text = "⚙️",
                         style = TextStyle(
@@ -142,7 +152,6 @@ class ToggleTimerAction : ActionCallback {
         TimerPreferences.startTimer(context, appWidgetId)
         TimerUtils.scheduleTimerAlarm(context, triggerTime)
 
-        //Ping Glance state so it re-composes immediately
         androidx.glance.appwidget.state.updateAppWidgetState(context, glanceId) { prefs ->
             prefs[TimerKeys.LAST_UPDATED] = System.currentTimeMillis()
         }

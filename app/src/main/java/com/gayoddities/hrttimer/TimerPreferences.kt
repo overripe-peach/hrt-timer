@@ -8,6 +8,7 @@ import android.content.SharedPreferences
 
 
 object TimerPreferences {
+    //TIMER DATA STORE
     private const val PREFS_NAME = "hrt_timer_prefs"
     private const val KEY_START_TIME = "start_time"
     //this determines the timer duration for the next time you start the timer
@@ -17,12 +18,22 @@ object TimerPreferences {
     private const val KEY_READY_COLOR = "ready_color"
     //this holds the timer duration for the current running timers
     private const val KEY_CURRENT_TIMER_DURATION_MS = "current_timer_duration_ms"
+
+    //STREAK TRACKING DATA STORE
+    private const val KEY_STREAK_COUNT = "streak_count"
+    private const val KEY_STREAK_WINDOW_MS = "streak_window_ms"
+    private const val KEY_LAST_FINISH_TIME = "last_finish_time"
+
+    //DEFAULTS SETTINGS CONSTANTS
     //Background ready state defaults to green
     const val DEFAULT_READY_COLOR = 0xFF4CAF50.toInt()
     // Default to 5 days if none is set
     const val DEFAULT_DURATION = 5 * 24 * 60 * 60 * 1000L
     const val DEFAULT_MEDICINE_NAME = "HRT"
     const val RUNNING_COLOR = 0xFF333333.toInt()
+    const val DEFAULT_STREAK_WINDOW_MS = 12 * 60 * 60 * 1000L // Default 12 hours grace window
+
+    //TIME CONSTANTS
     const val DAYS_MS = 24 * 60 * 60 * 1000L //or 86,400,000
     const val HOUR_MS = 60 * 60 * 1000L //or 3,600,000
     const val MINUTE_MS = 60 * 1000L //or 60,000
@@ -42,34 +53,59 @@ object TimerPreferences {
 
     fun startTimer(context: Context, appWidgetId: Int) {
         val currentTime = System.currentTimeMillis()
+        val prefs = getPrefs(context, appWidgetId)
+        val lastFinishTime = getLastFinishTime(context, appWidgetId)
+        val streakWindow = getStreakWindowMS(context, appWidgetId)
 
-        //take duration_ms and place it into current_timer_duration_ms.
+        //take duration_ms and place it into current timer duration_MS.
         //This prevents settings page from updating the finish date / time
         //on a current running timer
         val newDuration =  getPrefs(context, appWidgetId).getLong(KEY_DURATION_MS, DEFAULT_DURATION)
-        getPrefs(context, appWidgetId).edit(commit = true) { putLong(KEY_CURRENT_TIMER_DURATION_MS, newDuration) }
+        prefs.edit(commit = true) { putLong(KEY_CURRENT_TIMER_DURATION_MS, newDuration) }
 
         //place system current time into start time key
-        getPrefs(context, appWidgetId).edit(commit = true) { putLong(KEY_START_TIME, currentTime) }
+        prefs.edit(commit = true) { putLong(KEY_START_TIME, currentTime) }
         Log.d("TimerPreferences", "Timer started at $currentTime for widget ID: $appWidgetId")
+
+        //set streak window to 0 to disable streak
+        if (streakWindow > 0) {
+            //now we assess streak status
+            if (lastFinishTime > 0L) {
+                val deadline = lastFinishTime + streakWindow
+
+                if (currentTime <= deadline) {
+                    // Success within grace window: Increment streak
+                    incrementStreakCount(context, appWidgetId)
+                } else { // Past grace window: Reset streak to 1
+                    resetStreakCount(context, appWidgetId)
+                }
+            } else { //time has never been started
+                resetStreakCount(context, appWidgetId)
+            }
+        }
     }
 
-
     fun resetTimer(context: Context, appWidgetId: Int) {
-        getPrefs(context, appWidgetId).edit (commit = true) { putLong(KEY_START_TIME, -1L) }
+        getPrefs(context, appWidgetId).edit (commit = true) {
+            putLong(KEY_START_TIME, -1L)
+            putInt(KEY_STREAK_COUNT, 0)
+            putLong( KEY_LAST_FINISH_TIME, -1L)
+        }
         Log.d("TimerPreferences", "Reset timer for widget ID: $appWidgetId")
+    }
+
+    fun expireTimer(context: Context, appWidgetId: Int) {
+        val finishTime = System.currentTimeMillis()
+
+        getPrefs(context, appWidgetId).edit(commit = true) {
+            putLong(KEY_LAST_FINISH_TIME, finishTime)
+            putLong(KEY_START_TIME, -1L)
+        }
+        Log.d("TimerPreferences", "Timer expired for widget ID: $appWidgetId. Recorded finish time: $finishTime")
     }
 
     fun getDurationMS(context: Context, appWidgetId: Int): Long {
         return getPrefs(context, appWidgetId).getLong(KEY_DURATION_MS, DEFAULT_DURATION)
-    }
-
-    fun getDurationDays(context: Context, appWidgetId: Int): Long {
-        return getPrefs(context, appWidgetId).getLong(KEY_DURATION_MS, DEFAULT_DURATION) / (24L * 60L * 60L * 1000L)
-    }
-
-    fun getDurationHours(context: Context, appWidgetId: Int): Long {
-        return getPrefs(context, appWidgetId).getLong(KEY_DURATION_MS, DEFAULT_DURATION) / (60L * 60L * 1000L)
     }
 
     fun setDurationMS(context: Context, appWidgetId: Int, duration: Long) {
@@ -98,5 +134,34 @@ object TimerPreferences {
 
     fun setReadyColor(context: Context, appWidgetId: Int, colorInt: Int) {
         getPrefs(context, appWidgetId).edit(commit = true) { putInt(KEY_READY_COLOR, colorInt) }
+    }
+
+    //STREAK FUNCTIONS
+    // --- New Streak Methods ---
+
+    fun getStreakCount(context: Context, appWidgetId: Int): Int {
+        return getPrefs(context, appWidgetId).getInt(KEY_STREAK_COUNT, 0)
+    }
+
+    fun incrementStreakCount(context: Context, appWidgetId: Int): Int {
+        val currentStreak = getStreakCount(context, appWidgetId) + 1
+        getPrefs(context, appWidgetId).edit(commit = true) { putInt(KEY_STREAK_COUNT, currentStreak) }
+        return currentStreak
+    }
+
+    fun resetStreakCount(context: Context, appWidgetId: Int) {
+        getPrefs(context, appWidgetId).edit(commit = true) { putInt(KEY_STREAK_COUNT, 0) }
+    }
+
+    fun getStreakWindowMS(context: Context, appWidgetId: Int): Long {
+        return getPrefs(context, appWidgetId).getLong(KEY_STREAK_WINDOW_MS, DEFAULT_STREAK_WINDOW_MS)
+    }
+
+    fun setStreakWindowMS(context: Context, appWidgetId: Int, windowMs: Long) {
+        getPrefs(context, appWidgetId).edit(commit = true) { putLong(KEY_STREAK_WINDOW_MS, windowMs) }
+    }
+
+    fun getLastFinishTime(context: Context, appWidgetId: Int): Long {
+        return getPrefs(context,appWidgetId).getLong(KEY_LAST_FINISH_TIME, -1L)
     }
 }

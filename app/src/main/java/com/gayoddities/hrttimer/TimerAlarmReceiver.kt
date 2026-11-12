@@ -27,7 +27,7 @@ class TimerAlarmReceiver : BroadcastReceiver() {
 
                     // Check if this specific widget's timer has expired/fired
                     if (TimerUtils.isTimerExpired(context, appWidgetId)) {
-                        TimerPreferences.resetTimer(context, appWidgetId)
+                        TimerPreferences.expireTimer(context, appWidgetId)
 
                         // Poke Glance state for this specific widget so it redraws
                         androidx.glance.appwidget.state.updateAppWidgetState(context, glanceId) { prefs ->

@@ -19,6 +19,8 @@ import androidx.lifecycle.lifecycleScope
 import kotlinx.coroutines.launch
 import androidx.compose.ui.graphics.Color
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 
 class SettingsActivity : ComponentActivity() {
 
@@ -30,22 +32,27 @@ class SettingsActivity : ComponentActivity() {
         val currentMedicine = TimerPreferences.getMedicineName(this@SettingsActivity, appWidgetId)
         val currentColor = TimerPreferences.getReadyColor(this@SettingsActivity, appWidgetId)
         val currentDurationMs = TimerPreferences.getDurationMS(this@SettingsActivity, appWidgetId)
+        val currentStreakWindowMs = TimerPreferences.getStreakWindowMS(this@SettingsActivity, appWidgetId)
 
         setContent {
             MaterialTheme {
                 SettingsScreen(
                     initialDurationMs = currentDurationMs,
+                    initialStreakWindowMs = currentStreakWindowMs,
                     initialMedicine = currentMedicine,
                     initialColor = currentColor,
                     onSaveDuration = { durationMs ->
                         TimerPreferences.setDurationMS(this@SettingsActivity, appWidgetId, durationMs)
+                    },
+                    onSaveStreakWindow = { windowMs ->
+                        TimerPreferences.setStreakWindowMS(this@SettingsActivity, appWidgetId, windowMs)
                     },
                     onSaveMedicine = { newName ->
                         TimerPreferences.setMedicineName(this@SettingsActivity, appWidgetId, newName)
                     },
                     onSaveColor = { newColor ->
                         TimerPreferences.setReadyColor(this@SettingsActivity, appWidgetId, newColor)
-                        Toast.makeText(this, "Timer indication color set to $newColor", Toast.LENGTH_SHORT).show()
+                        //Toast.makeText(this, "Timer indication color set to $newColor", Toast.LENGTH_SHORT).show()
                     },
                     onResetTimer = {
                         lifecycleScope.launch {
@@ -95,9 +102,12 @@ class SettingsActivity : ComponentActivity() {
 @Composable
 fun SettingsScreen(
     initialDurationMs: Long,
+    initialStreakWindowMs: Long,
     initialMedicine: String,
+    @Suppress("UNUSED_PARAMETER")
     initialColor: Int,
     onSaveDuration: (Long) -> Unit,
+    onSaveStreakWindow: (Long) -> Unit,
     onSaveMedicine: (String) -> Unit,
     onSaveColor: (Int) -> Unit,
     onResetTimer: () -> Unit,
@@ -107,14 +117,14 @@ fun SettingsScreen(
     val oneDayMs = TimerPreferences.DAYS_MS
     val oneMinMS = TimerPreferences.MINUTE_MS
 
-    // Determine initial unit tier based on stored milliseconds
+    // Determine initial unit tier based on stored milliseconds for duration
     val unitTier = when {
         initialDurationMs < oneHourMs -> "MINUTES"
         initialDurationMs < oneDayMs -> "HOURS"
         else -> "DAYS"
     }
 
-    var currentTier by remember { mutableStateOf(unitTier) } // "DAYS", "HOURS", or "MINUTES"
+    var currentTier by remember { mutableStateOf(unitTier) }
 
     val initialDisplayValue = when (currentTier) {
         "MINUTES" -> maxOf(1L, initialDurationMs / oneMinMS).toString()
@@ -141,7 +151,6 @@ fun SettingsScreen(
         when (currentTier) {
             "DAYS" -> {
                 if (newValue < 1) {
-                    // Switch from Days down to Hours (starting at 23)
                     currentTier = "HOURS"
                     durationText = "23"
                     persistDuration(23, "HOURS")
@@ -153,12 +162,10 @@ fun SettingsScreen(
 
             "HOURS" -> {
                 if (newValue > 23) {
-                    // Switch from Hours up to Days (starting at 1)
                     currentTier = "DAYS"
                     durationText = "1"
                     persistDuration(1, "DAYS")
                 } else if (newValue < 1) {
-                    // Switch from Hours down to Minutes (starting at 59)
                     currentTier = "MINUTES"
                     durationText = "59"
                     persistDuration(59, "MINUTES")
@@ -170,12 +177,10 @@ fun SettingsScreen(
 
             "MINUTES" -> {
                 if (newValue > 59) {
-                    // Switch from Minutes up to Hours (starting at 1)
                     currentTier = "HOURS"
                     durationText = "1"
                     persistDuration(1, "HOURS")
                 } else if (newValue < 1) {
-                    // Minimum clamp at 1 minute
                     durationText = "1"
                     persistDuration(1, "MINUTES")
                 } else {
@@ -186,11 +191,71 @@ fun SettingsScreen(
         }
     }
 
-    // Dynamic label text based on active tier
     val tierLabelText = when (currentTier) {
         "MINUTES" -> "Timer Duration (Minutes)"
         "HOURS" -> "Timer Duration (Hours)"
         else -> "Timer Duration (Days)"
+    }
+
+    // Determine initial unit tier for streak window
+    val streakUnitTier = when {
+        initialStreakWindowMs < oneDayMs -> "HOURS"
+        else -> "DAYS"
+    }
+
+    var currentStreakTier by remember { mutableStateOf(streakUnitTier) }
+
+    val initialStreakDisplayValue = when (currentStreakTier) {
+        "HOURS" -> maxOf(0L, initialStreakWindowMs / oneHourMs).toString()
+        else -> maxOf(1L, initialStreakWindowMs / oneDayMs).toString()
+    }
+
+    var streakWindowText by remember { mutableStateOf(initialStreakDisplayValue) }
+
+    fun persistStreakWindow(value: Int, tier: String) {
+        val windowMs = when (tier) {
+            "HOURS" -> value * oneHourMs
+            else -> value * oneDayMs
+        }
+        onSaveStreakWindow(windowMs)
+    }
+
+    fun updateStreakWindow(delta: Int) {
+        val currentValue = streakWindowText.toIntOrNull() ?: 0
+        val newValue = currentValue + delta
+
+        when (currentStreakTier) {
+            "DAYS" -> {
+                if (newValue < 1) {
+                    currentStreakTier = "HOURS"
+                    streakWindowText = "23"
+                    persistStreakWindow(23, "HOURS")
+                } else {
+                    streakWindowText = newValue.toString()
+                    persistStreakWindow(newValue, "DAYS")
+                }
+            }
+
+            "HOURS" -> {
+                if (newValue > 23) {
+                    currentStreakTier = "DAYS"
+                    streakWindowText = "1"
+                    persistStreakWindow(1, "DAYS")
+                } else if (newValue < 0 ) {
+                    // Clamp at 0 hours minimum
+                    streakWindowText = "0"
+                    persistStreakWindow(0, "HOURS")
+                } else {
+                    streakWindowText = newValue.toString()
+                    persistStreakWindow(newValue, "HOURS")
+                }
+            }
+        }
+    }
+
+    val streakTierLabelText = when (currentStreakTier) {
+        "HOURS" -> "Streak Window (Hours)"
+        else -> "Streak Window (Days)"
     }
 
     Surface(
@@ -200,6 +265,7 @@ fun SettingsScreen(
         Column(
             modifier = Modifier
                 .fillMaxSize()
+                .verticalScroll(rememberScrollState())
                 .padding(24.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Center
@@ -226,7 +292,7 @@ fun SettingsScreen(
 
             Spacer(modifier = Modifier.height(24.dp))
 
-            // Dynamic Unit Label
+            // Dynamic Unit Label (Duration)
             Text(
                 text = tierLabelText,
                 fontSize = 14.sp,
@@ -236,14 +302,13 @@ fun SettingsScreen(
 
             Spacer(modifier = Modifier.height(8.dp))
 
-            ///// UPDATE TIMER DURATION + / - BUTTONS ////
+            // DURATION CONTROLS
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(56.dp),
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                // - BUTTON ON LEFT
                 Button(
                     onClick = { updateDuration(-1) },
                     modifier = Modifier.weight(1f).fillMaxHeight(),
@@ -258,7 +323,6 @@ fun SettingsScreen(
                     Text("-", fontSize = 22.sp, fontWeight = FontWeight.Bold)
                 }
 
-                // DURATION TEXT BOX
                 OutlinedTextField(
                     value = durationText,
                     onValueChange = { newValue ->
@@ -276,7 +340,6 @@ fun SettingsScreen(
                     shape = androidx.compose.foundation.shape.RoundedCornerShape(0.dp)
                 )
 
-                // + BUTTON ON RIGHT
                 Button(
                     onClick = { updateDuration(1) },
                     modifier = Modifier.weight(1f).fillMaxHeight(),
@@ -291,6 +354,72 @@ fun SettingsScreen(
                     Text("+", fontSize = 22.sp, fontWeight = FontWeight.Bold)
                 }
             }
+
+            Spacer(modifier = Modifier.height(24.dp))
+
+            // Streak Window Unit Label
+            Text(
+                text = streakTierLabelText,
+                fontSize = 14.sp,
+                fontWeight = FontWeight.Medium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+
+            Spacer(modifier = Modifier.height(8.dp))
+
+            // STREAK WINDOW CONTROLS
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(56.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Button(
+                    onClick = { updateStreakWindow(-1) },
+                    modifier = Modifier.weight(1f).fillMaxHeight(),
+                    shape = androidx.compose.foundation.shape.RoundedCornerShape(
+                        topStart = 8.dp, bottomStart = 8.dp, topEnd = 0.dp, bottomEnd = 0.dp
+                    ),
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = MaterialTheme.colorScheme.secondaryContainer,
+                        contentColor = MaterialTheme.colorScheme.onSecondaryContainer
+                    )
+                ) {
+                    Text("-", fontSize = 22.sp, fontWeight = FontWeight.Bold)
+                }
+
+                OutlinedTextField(
+                    value = streakWindowText,
+                    onValueChange = { newValue ->
+                        streakWindowText = newValue
+                        newValue.toIntOrNull()?.let { persistStreakWindow(it, currentStreakTier) }
+                    },
+                    modifier = Modifier.weight(2f).fillMaxHeight(),
+                    textStyle = LocalTextStyle.current.copy(
+                        textAlign = androidx.compose.ui.text.style.TextAlign.Center,
+                        fontSize = 18.sp,
+                        fontWeight = FontWeight.Bold
+                    ),
+                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                    singleLine = true,
+                    shape = androidx.compose.foundation.shape.RoundedCornerShape(0.dp)
+                )
+
+                Button(
+                    onClick = { updateStreakWindow(1) },
+                    modifier = Modifier.weight(1f).fillMaxHeight(),
+                    shape = androidx.compose.foundation.shape.RoundedCornerShape(
+                        topStart = 0.dp, bottomStart = 0.dp, topEnd = 8.dp, bottomEnd = 8.dp
+                    ),
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = MaterialTheme.colorScheme.primary,
+                        contentColor = MaterialTheme.colorScheme.onPrimary
+                    )
+                ) {
+                    Text("+", fontSize = 22.sp, fontWeight = FontWeight.Bold)
+                }
+            }
+
             Spacer(modifier = Modifier.height(24.dp))
 
             // Ready State Color Picker
@@ -326,6 +455,7 @@ fun SettingsScreen(
                     ) {}
                 }
             }
+
             Spacer(modifier = Modifier.height(28.dp))
 
             // Reset Timer Button
