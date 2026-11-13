@@ -97,8 +97,8 @@ class HRTWidget : GlanceAppWidget() {
                         .background(backgroundColor)
                         .padding(16.dp)
                         .let { if (isReady) it.clickable(actionRunCallback<ToggleTimerAction>()) else it },
-                    verticalAlignment = Alignment.Vertical.CenterVertically,
-                    horizontalAlignment = Alignment.Horizontal.CenterHorizontally
+                            verticalAlignment = Alignment.Vertical.CenterVertically,
+                            horizontalAlignment = Alignment.Horizontal.Start
                 ) {
                     Text(
                         text = statusText,
@@ -109,7 +109,7 @@ class HRTWidget : GlanceAppWidget() {
                     )
 
                     if (TimerPreferences.getStreakWindowMS(context,appWidgetId) >0 ) {
-                        Spacer(modifier = GlanceModifier.height(70.dp))
+                        Spacer(modifier = GlanceModifier.height(50.dp))
                         Text(
                             text = "🔥 Streak: $streakCount",
                             style = TextStyle(
