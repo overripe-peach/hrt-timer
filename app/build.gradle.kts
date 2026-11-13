@@ -21,8 +21,8 @@ android {
         applicationId = "com.gayoddities.hrttimer"
         minSdk = 24
         targetSdk = 37
-        versionCode = 7
-        versionName = "0.73.5"
+        versionCode = 8
+        versionName = "0.73.6"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
@@ -37,6 +37,9 @@ android {
             )
             // Link the signing configuration here:
             signingConfig = signingConfigs.getByName("release")
+            ndk {
+                debugSymbolLevel = "FULL"
+            }
         }
     }
     compileOptions {
