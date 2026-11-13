@@ -81,7 +81,7 @@ class HRTWidget : GlanceAppWidget() {
                 val finishTime = startTime + timerDuration
                 val formatter = SimpleDateFormat("EEE, MMM d 'at' hh:mm a", Locale.getDefault())
                 val formattedDate = formatter.format(Date(finishTime))
-                statusText = "Next dose of $medicineName at:\n\n$formattedDate"
+                statusText = "Next dose of $medicineName:\n\n$formattedDate"
             } else {
                 statusText = "$medicineName Ready\n\n(Tap to Start)"
             }
@@ -109,7 +109,7 @@ class HRTWidget : GlanceAppWidget() {
                     )
 
                     if (TimerPreferences.getStreakWindowMS(context,appWidgetId) >0 ) {
-                        Spacer(modifier = GlanceModifier.height(50.dp))
+                        Spacer(modifier = GlanceModifier.height(30.dp))
                         Text(
                             text = "🔥 Streak: $streakCount",
                             style = TextStyle(
