@@ -192,9 +192,9 @@ fun SettingsScreen(
     }
 
     val tierLabelText = when (currentTier) {
-        "MINUTES" -> "Timer Duration (Minutes)"
-        "HOURS" -> "Timer Duration (Hours)"
-        else -> "Timer Duration (Days)"
+        "MINUTES" -> "Next Timer Duration (Minutes)"
+        "HOURS" -> "Next Timer Duration (Hours)"
+        else -> "Next Timer Duration (Days)"
     }
 
     // Determine initial unit tier for streak window
