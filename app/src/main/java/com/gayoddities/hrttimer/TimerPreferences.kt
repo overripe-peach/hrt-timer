@@ -26,7 +26,7 @@ object TimerPreferences {
 
     //DEFAULTS SETTINGS CONSTANTS
     //Background ready state defaults to green
-    const val DEFAULT_READY_COLOR = 0xFF4CAF50.toInt()
+    const val DEFAULT_READY_COLOR = 0xFF9C27B0.toInt()
     // Default to 7 days if none is set
     const val DEFAULT_DURATION = 7 * 24 * 60 * 60 * 1000L
     const val DEFAULT_MEDICINE_NAME = "HRT"

@@ -11,7 +11,7 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalConfiguration
+//import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -19,7 +19,8 @@ import androidx.glance.appwidget.GlanceAppWidgetManager
 import androidx.lifecycle.lifecycleScope
 import kotlinx.coroutines.launch
 import java.util.Calendar
-//import java.util.Locale
+import android.text.format.DateFormat
+import androidx.compose.ui.platform.LocalContext
 
 class WidgetSetupActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -39,51 +40,78 @@ class WidgetSetupActivity : ComponentActivity() {
                             val durationMillis = targetMillis - currentTime
 
                             if (durationMillis <= 0) {
-                                Toast.makeText(
+                               /* Toast.makeText(
                                     this@WidgetSetupActivity,
                                     "Please select a future date and time.",
                                     Toast.LENGTH_SHORT
                                 ).show()
-                                return@launch
-                            }
+                                return@launch*/
+                            } else {
+                                // 1. Save this custom duration as the duration for this widget
+                                TimerPreferences.setDurationMS(
+                                    this@WidgetSetupActivity,
+                                    appWidgetId,
+                                    durationMillis
+                                )
 
-                            // 1. Save this custom duration as the duration for this widget
-                            TimerPreferences.setDurationMS(this@WidgetSetupActivity, appWidgetId, durationMillis)
+                                // 2. Start the timer immediately so it enters the running state targeting that end time
+                                TimerPreferences.startTimer(this@WidgetSetupActivity, appWidgetId)
 
-                            // 2. Start the timer immediately so it enters the running state targeting that end time
-                            TimerPreferences.startTimer(this@WidgetSetupActivity, appWidgetId)
+                                // 3. Schedule the background alarm
+                                val triggerTime = currentTime + durationMillis
+                                TimerUtils.scheduleTimerAlarm(this@WidgetSetupActivity, triggerTime)
 
-                            // 3. Schedule the background alarm
-                            val triggerTime = currentTime + durationMillis
-                            TimerUtils.scheduleTimerAlarm(this@WidgetSetupActivity, triggerTime)
-
-                            // 4. Update Glance state & force widget refresh
-                            if (appWidgetId != AppWidgetManager.INVALID_APPWIDGET_ID) {
-                                val glanceId = GlanceAppWidgetManager(this@WidgetSetupActivity).getGlanceIdBy(appWidgetId)
-                                androidx.glance.appwidget.state.updateAppWidgetState(this@WidgetSetupActivity, glanceId) { prefs ->
-                                    prefs[TimerKeys.LAST_UPDATED] = System.currentTimeMillis()
+                                // 4. Update Glance state & force widget refresh
+                                if (appWidgetId != AppWidgetManager.INVALID_APPWIDGET_ID) {
+                                    val glanceId =
+                                        GlanceAppWidgetManager(this@WidgetSetupActivity).getGlanceIdBy(
+                                            appWidgetId
+                                        )
+                                    androidx.glance.appwidget.state.updateAppWidgetState(
+                                        this@WidgetSetupActivity,
+                                        glanceId
+                                    ) { prefs ->
+                                        prefs[TimerKeys.LAST_UPDATED] = System.currentTimeMillis()
+                                    }
+                                    HRTWidget().update(this@WidgetSetupActivity, glanceId)
                                 }
-                                HRTWidget().update(this@WidgetSetupActivity, glanceId)
+                                Toast.makeText(
+                                    this@WidgetSetupActivity,
+                                    "Timer started!",
+                                    Toast.LENGTH_SHORT
+                                ).show()
                             }
 
                             // 5. Return success result to Android so the widget is successfully pinned/added
-                            val resultValue = Intent().putExtra(AppWidgetManager.EXTRA_APPWIDGET_ID, appWidgetId)
+                            val resultValue = Intent().putExtra(
+                                AppWidgetManager.EXTRA_APPWIDGET_ID,
+                                appWidgetId
+                            )
                             setResult(RESULT_OK, resultValue)
 
                             // 6. Launch SettingsActivity for this widget instance so they can customize name/color if desired
-                            val settingsIntent = Intent(this@WidgetSetupActivity, SettingsActivity::class.java).apply {
+                            val settingsIntent = Intent(
+                                this@WidgetSetupActivity,
+                                SettingsActivity::class.java
+                            ).apply {
                                 putExtra(AppWidgetManager.EXTRA_APPWIDGET_ID, appWidgetId)
                                 // If your SettingsActivity uses "appWidgetId" as the extra key:
                                 putExtra("appWidgetId", appWidgetId)
                             }
 
                             //set streak and duration to defaults
-                            TimerPreferences.setDurationMS(this@WidgetSetupActivity,appWidgetId,TimerPreferences.DEFAULT_DURATION)
-                            TimerPreferences.setStreakWindowMS(this@WidgetSetupActivity,appWidgetId,TimerPreferences.DEFAULT_STREAK_WINDOW)
+                            TimerPreferences.setDurationMS(
+                                this@WidgetSetupActivity,
+                                appWidgetId,
+                                TimerPreferences.DEFAULT_DURATION
+                            )
+                            TimerPreferences.setStreakWindowMS(
+                                this@WidgetSetupActivity,
+                                appWidgetId,
+                                TimerPreferences.DEFAULT_STREAK_WINDOW
+                            )
 
                             startActivity(settingsIntent)
-
-                            Toast.makeText(this@WidgetSetupActivity, "Timer started!", Toast.LENGTH_SHORT).show()
                             finish()
                         }
                     }
@@ -99,13 +127,14 @@ class WidgetSetupActivity : ComponentActivity() {
 fun WidgetSetupScreen(onNextClicked: (Long) -> Unit) {
     // Initialize calendar to current date/time + default 5 days ahead as a helpful starting suggestion
     val calendar = remember {
-        Calendar.getInstance().apply {
-            add(Calendar.DAY_OF_YEAR, 5)
-        }
+        Calendar.getInstance() //.apply {
+         //   add(Calendar.DAY_OF_YEAR, 5)
+        //}
     }
 
-    val configuration = LocalConfiguration.current
-    val locale = configuration.locales[0] // Gets the current observable locale
+    //val configuration = LocalConfiguration.current
+    //val locale = configuration.locales[0] // Gets the current observable locale
+    val context = LocalContext.current
 
     var selectedYear by remember { mutableIntStateOf(calendar.get(Calendar.YEAR)) }
     var selectedMonth by remember { mutableIntStateOf(calendar.get(Calendar.MONTH)) }
@@ -133,19 +162,22 @@ fun WidgetSetupScreen(onNextClicked: (Long) -> Unit) {
 
             Spacer(modifier = Modifier.height(24.dp))
 
-            // A clean date picker state / dialog trigger or simple numeric selectors / Material DatePicker
-            // For simplicity and robustness across versions, we can use Material3 Date & Time pickers or compact controls:
+            //Build your target Calendar instance from the selected values
+            val targetCalendar = Calendar.getInstance().apply {
+                set(selectedYear, selectedMonth, selectedDay, selectedHour, selectedMinute, 0)
+                set(Calendar.MILLISECOND, 0)
+            }
 
-            // Display chosen summary text
-            val formattedSelectedDate = String.format(
-                locale,
-                "%02d/%02d/%d at %02d:%02d",
-                selectedMonth + 1,
-                selectedDay,
-                selectedYear,
-                selectedHour,
-                selectedMinute
-            )
+            //Automatically get the system's preferred date format (e.g. MM/dd/yyyy or dd/MM/yyyy based on locale)
+            val dateFormat = DateFormat.getDateFormat(context)
+            val formattedDateStr = dateFormat.format(targetCalendar.time)
+
+            //Automatically get the system's preferred time format (respects 12-hour AM/PM vs 24-hour setting)
+            val timeFormat = DateFormat.getTimeFormat(context)
+            val formattedTimeStr = timeFormat.format(targetCalendar.time)
+
+            //Combine them cleanly
+            val formattedSelectedDate = "$formattedDateStr at $formattedTimeStr"
 
             Card(
                 modifier = Modifier.fillMaxWidth(),
@@ -168,7 +200,7 @@ fun WidgetSetupScreen(onNextClicked: (Long) -> Unit) {
             Spacer(modifier = Modifier.height(24.dp))
 
             // Button to open standard Android DatePickerDialog
-            val context = androidx.compose.ui.platform.LocalContext.current
+            //val context = androidx.compose.ui.platform.LocalContext.current
             Button(
                 onClick = {
                     android.app.DatePickerDialog(
