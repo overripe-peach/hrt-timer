@@ -1,7 +1,6 @@
 package com.gayoddities.hrttimer
 
 import android.content.Intent
-import android.annotation.SuppressLint
 import android.appwidget.AppWidgetManager
 import android.os.Bundle
 import android.widget.Toast
@@ -12,6 +11,7 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -19,6 +19,7 @@ import androidx.glance.appwidget.GlanceAppWidgetManager
 import androidx.lifecycle.lifecycleScope
 import kotlinx.coroutines.launch
 import java.util.Calendar
+//import java.util.Locale
 
 class WidgetSetupActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -93,7 +94,7 @@ class WidgetSetupActivity : ComponentActivity() {
 }
 
 //@OptIn(ExperimentalMaterial3Api::class)
-@SuppressLint("DefaultLocale")
+//@SuppressLint("DefaultLocale")
 @Composable
 fun WidgetSetupScreen(onNextClicked: (Long) -> Unit) {
     // Initialize calendar to current date/time + default 5 days ahead as a helpful starting suggestion
@@ -102,6 +103,9 @@ fun WidgetSetupScreen(onNextClicked: (Long) -> Unit) {
             add(Calendar.DAY_OF_YEAR, 5)
         }
     }
+
+    val configuration = LocalConfiguration.current
+    val locale = configuration.locales[0] // Gets the current observable locale
 
     var selectedYear by remember { mutableIntStateOf(calendar.get(Calendar.YEAR)) }
     var selectedMonth by remember { mutableIntStateOf(calendar.get(Calendar.MONTH)) }
@@ -134,6 +138,7 @@ fun WidgetSetupScreen(onNextClicked: (Long) -> Unit) {
 
             // Display chosen summary text
             val formattedSelectedDate = String.format(
+                locale,
                 "%02d/%02d/%d at %02d:%02d",
                 selectedMonth + 1,
                 selectedDay,
