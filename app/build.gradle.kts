@@ -1,3 +1,19 @@
+import java.util.Properties
+
+// Load local.properties
+val localProperties = Properties().apply {
+    val file = rootProject.file("local.properties")
+    if (file.exists()) {
+        file.inputStream().use { load(it) }
+    }
+}
+
+// Extract variables safely with fallbacks or error checks
+val customStorePassword = localProperties.getProperty("storePassword") ?: ""
+val customKeyPassword = localProperties.getProperty("keyPassword") ?: ""
+val customStoreFile = localProperties.getProperty("storeFile") ?: ""
+val customKeyAlias = localProperties.getProperty("keyAlias") ?: ""
+
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.compose)
@@ -9,11 +25,10 @@ android {
 
     signingConfigs {
         create("release") {
-            // Point to your keystore file relative to the app module directory
-            storeFile = file("/Users/riley/AndroidStudioProjects/APKSignKey.jks")
-            storePassword = "x!=Yxcr%@E<RLYz:H;49_N>iTYUmkbH^N%VC7SHW>+2EDX%+XDg=w:+A+tX^"
-            keyAlias = "key69"
-            keyPassword = "&&Pw+Q>f&DdLmhd%tprMN+k3FCp>A!243mx^x3.:_Q;fPkSxEp&g&&b.T#EQ"
+            storeFile = File(customStoreFile)
+            storePassword = customStorePassword
+            keyAlias = customKeyAlias
+            keyPassword = customKeyPassword
         }
     }
 
