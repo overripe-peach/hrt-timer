@@ -4,6 +4,7 @@ import android.os.Bundle
 import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.*
@@ -134,6 +135,7 @@ fun SettingsScreen(
 
     var durationText by remember { mutableStateOf(initialDisplayValue) }
     var medicineText by remember { mutableStateOf(initialMedicine) }
+    var selectedColor by remember { mutableIntStateOf(initialColor) }
 
     fun persistDuration(value: Int, tier: String) {
         val durationMs = when (tier) {
@@ -433,25 +435,37 @@ fun SettingsScreen(
             Spacer(modifier = Modifier.height(8.dp))
 
             val presetColors = listOf(
-                0xFF4CAF50, // Green
+                0xFF175229, // Green
                 0xFF2196F3, // Blue
                 0xFF9C27B0, // Purple
                 0xFF009688, // Teal
-                0xFFE91E63  // Pink
+                0xFFE620A1, // Pink
+                0xFFFF9800, // Orange
             )
 
-            Row(
+            FlowRow(
                 modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceEvenly
+                horizontalArrangement = Arrangement.spacedBy(12.dp, Alignment.CenterHorizontally),
+                verticalArrangement = Arrangement.spacedBy(12.dp)
             ) {
                 presetColors.forEach { colorVal ->
-                    val color = Color(colorVal)
+                    val colorInt = colorVal.toInt()
+                    val isSelected = selectedColor == colorInt
+
                     Surface(
                         modifier = Modifier
-                            .size(40.dp)
-                            .clickable { onSaveColor(colorVal.toInt()) },
+                            .size(42.dp)
+                            .clickable {
+                                selectedColor = colorInt
+                                onSaveColor(colorInt)
+                            },
                         shape = androidx.compose.foundation.shape.CircleShape,
-                        color = color
+                        color = Color(colorVal),
+                        border = if (isSelected) {
+                            BorderStroke(3.dp, MaterialTheme.colorScheme.onSurface)
+                        } else {
+                            null
+                        }
                     ) {}
                 }
             }
