@@ -21,8 +21,8 @@ android {
         applicationId = "com.gayoddities.hrttimer"
         minSdk = 24
         targetSdk = 37
-        versionCode = 9
-        versionName = "0.73.9"
+        versionCode = 10
+        versionName = "0.74.2"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }

@@ -27,11 +27,11 @@ object TimerPreferences {
     //DEFAULTS SETTINGS CONSTANTS
     //Background ready state defaults to green
     const val DEFAULT_READY_COLOR = 0xFF4CAF50.toInt()
-    // Default to 5 days if none is set
-    const val DEFAULT_DURATION = 5 * 24 * 60 * 60 * 1000L
+    // Default to 7 days if none is set
+    const val DEFAULT_DURATION = 7 * 24 * 60 * 60 * 1000L
     const val DEFAULT_MEDICINE_NAME = "HRT"
     const val RUNNING_COLOR = 0xFF333333.toInt()
-    const val DEFAULT_STREAK_WINDOW_MS = 12 * 60 * 60 * 1000L // Default 12 hours grace window
+    const val DEFAULT_STREAK_WINDOW = 24 * 60 * 60 * 1000L // Default 1 day grace window
 
     //TIME CONSTANTS
     const val DAYS_MS = 24 * 60 * 60 * 1000L //or 86,400,000
@@ -154,7 +154,7 @@ object TimerPreferences {
     }
 
     fun getStreakWindowMS(context: Context, appWidgetId: Int): Long {
-        return getPrefs(context, appWidgetId).getLong(KEY_STREAK_WINDOW_MS, DEFAULT_STREAK_WINDOW_MS)
+        return getPrefs(context, appWidgetId).getLong(KEY_STREAK_WINDOW_MS, DEFAULT_STREAK_WINDOW)
     }
 
     fun setStreakWindowMS(context: Context, appWidgetId: Int, windowMs: Long) {
