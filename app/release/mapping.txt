@@ -3,8 +3,8 @@
 # min_api: 24
 # common_typos_disable
 # {"id":"com.android.tools.r8.mapping","version":"2.2"}
-# pg_map_id: 9a314bd853f00c25adc3f18af1e179e96e5b069998acc5678dcfc5b664ee5eee
-# pg_map_hash: SHA-256 9226481b922db66ed059633e9307b683c8ad44080f8197c32b8f30f114f4be80
+# pg_map_id: 11aa7e99cba37288a7ffa6077520538edebc07ded311dc9e3591e58f7b0978f9
+# pg_map_hash: SHA-256 a7efe467264bdfaf76a2f2b5323e005048dafd896053c94c4da74fc8a5a97494
 _COROUTINE.ArtificialStackFrames -> R8$$REMOVED$$CLASS$$0:
 # {"id":"sourceFile","fileName":"CoroutineDebugging.kt"}
 _COROUTINE.ArtificialStackFramesUnsafe -> ob:
@@ -230037,16 +230037,16 @@ com.gayoddities.hrttimer.RescheduleReceiver$onReceive$1 -> com.gayoddities.hrtti
     121:127:java.lang.Object invokeSuspend(java.lang.Object):67:67 -> invokeSuspend
     128:137:java.lang.Object invokeSuspend(java.lang.Object):70:70 -> invokeSuspend
     138:162:java.lang.Object invokeSuspend(java.lang.Object):71:71 -> invokeSuspend
-    163:170:java.lang.Object invokeSuspend(java.lang.Object):72:72 -> invokeSuspend
-    171:176:java.lang.Object invokeSuspend(java.lang.Object):74:74 -> invokeSuspend
-    177:204:java.lang.Object invokeSuspend(java.lang.Object):75:75 -> invokeSuspend
-    205:209:java.lang.Object invokeSuspend(java.lang.Object):76:76 -> invokeSuspend
-    210:236:java.lang.Object invokeSuspend(java.lang.Object):80:80 -> invokeSuspend
-    237:267:java.lang.Object invokeSuspend(java.lang.Object):85:85 -> invokeSuspend
-    268:272:java.lang.Object invokeSuspend(java.lang.Object):91:91 -> invokeSuspend
-    273:277:java.lang.Object invokeSuspend(java.lang.Object):93:93 -> invokeSuspend
-    278:281:java.lang.Object invokeSuspend(java.lang.Object):95:95 -> invokeSuspend
-    282:287:java.lang.Object invokeSuspend(java.lang.Object):93:93 -> invokeSuspend
+    163:170:java.lang.Object invokeSuspend(java.lang.Object):73:73 -> invokeSuspend
+    171:176:java.lang.Object invokeSuspend(java.lang.Object):75:75 -> invokeSuspend
+    177:204:java.lang.Object invokeSuspend(java.lang.Object):76:76 -> invokeSuspend
+    205:209:java.lang.Object invokeSuspend(java.lang.Object):77:77 -> invokeSuspend
+    210:236:java.lang.Object invokeSuspend(java.lang.Object):81:81 -> invokeSuspend
+    237:267:java.lang.Object invokeSuspend(java.lang.Object):86:86 -> invokeSuspend
+    268:272:java.lang.Object invokeSuspend(java.lang.Object):92:92 -> invokeSuspend
+    273:277:java.lang.Object invokeSuspend(java.lang.Object):94:94 -> invokeSuspend
+    278:281:java.lang.Object invokeSuspend(java.lang.Object):96:96 -> invokeSuspend
+    282:287:java.lang.Object invokeSuspend(java.lang.Object):94:94 -> invokeSuspend
 com.gayoddities.hrttimer.RescheduleReceiver$onReceive$1$1 -> com.gayoddities.hrttimer.RescheduleReceiver$onReceive$1$1:
 # {"id":"sourceFile","fileName":"TimerAlarmReceiver.kt"}
     2:5:void <init>(kotlin.coroutines.Continuation):0:0 -> <init>
@@ -230056,13 +230056,13 @@ com.gayoddities.hrttimer.RescheduleReceiver$onReceive$1$1 -> com.gayoddities.hrt
     1:13:java.lang.Object invoke(androidx.datastore.preferences.core.MutablePreferences,kotlin.coroutines.Continuation):0:0 -> invoke
       # {"id":"com.android.tools.r8.residualsignature","signature":"(Lvr0;Lfp;)Ljava/lang/Object;"}
     14:14:java.lang.Object invoke(java.lang.Object,java.lang.Object):0:0 -> invoke
-    5:11:java.lang.Object invokeSuspend(java.lang.Object):80:80 -> invokeSuspend
-    12:21:java.lang.Object invokeSuspend(java.lang.Object):81:81 -> invokeSuspend
+    5:11:java.lang.Object invokeSuspend(java.lang.Object):81:81 -> invokeSuspend
+    12:21:java.lang.Object invokeSuspend(java.lang.Object):82:82 -> invokeSuspend
     22:26:java.lang.Long kotlin.coroutines.jvm.internal.Boxing.boxLong(long):36:36 -> invokeSuspend
-    22:26:java.lang.Object invokeSuspend(java.lang.Object):81 -> invokeSuspend
-    27:29:java.lang.Object invokeSuspend(java.lang.Object):81:81 -> invokeSuspend
-    30:32:java.lang.Object invokeSuspend(java.lang.Object):82:82 -> invokeSuspend
-    33:39:java.lang.Object invokeSuspend(java.lang.Object):80:80 -> invokeSuspend
+    22:26:java.lang.Object invokeSuspend(java.lang.Object):82 -> invokeSuspend
+    27:29:java.lang.Object invokeSuspend(java.lang.Object):82:82 -> invokeSuspend
+    30:32:java.lang.Object invokeSuspend(java.lang.Object):83:83 -> invokeSuspend
+    33:39:java.lang.Object invokeSuspend(java.lang.Object):81:81 -> invokeSuspend
 com.gayoddities.hrttimer.SettingsActivity -> com.gayoddities.hrttimer.SettingsActivity:
 # {"id":"sourceFile","fileName":"SettingsActivity.kt"}
     1:4:void <init>():26:26 -> <init>
@@ -231408,30 +231408,30 @@ com.gayoddities.hrttimer.TimerPreferences -> com.gayoddities.hrttimer.TimerPrefe
 # {"id":"sourceFile","fileName":"TimerPreferences.kt"}
     1:8:void <clinit>():0:0 -> <clinit>
     1:4:void <init>():10:10 -> <init>
-    4:7:void startTimer(android.content.Context,int):98:98 -> expireTimer
-    4:7:void expireTimer(android.content.Context,int):98 -> expireTimer
-    8:11:void startTimer(android.content.Context,int):100:100 -> expireTimer
-    8:11:void expireTimer(android.content.Context,int):100 -> expireTimer
+    4:7:void startTimer(android.content.Context,int):102:102 -> expireTimer
+    4:7:void expireTimer(android.content.Context,int):102 -> expireTimer
+    8:11:void startTimer(android.content.Context,int):104:104 -> expireTimer
+    8:11:void expireTimer(android.content.Context,int):104 -> expireTimer
     12:15:void androidx.core.content.SharedPreferencesKt.edit(android.content.SharedPreferences,boolean,kotlin.jvm.functions.Function1):48:48 -> expireTimer
-    12:15:void expireTimer(android.content.Context,int):100 -> expireTimer
+    12:15:void expireTimer(android.content.Context,int):104 -> expireTimer
     16:18:void androidx.core.content.SharedPreferencesKt.edit(android.content.SharedPreferences,boolean,kotlin.jvm.functions.Function1):49:49 -> expireTimer
-    16:18:void expireTimer(android.content.Context,int):100 -> expireTimer
-    19:23:void startTimer(android.content.Context,int):101:101 -> expireTimer
-    19:23:void expireTimer(android.content.Context,int):101 -> expireTimer
-    24:30:void startTimer(android.content.Context,int):102:102 -> expireTimer
-    24:30:void expireTimer(android.content.Context,int):102 -> expireTimer
+    16:18:void expireTimer(android.content.Context,int):104 -> expireTimer
+    19:23:void startTimer(android.content.Context,int):105:105 -> expireTimer
+    19:23:void expireTimer(android.content.Context,int):105 -> expireTimer
+    24:30:void startTimer(android.content.Context,int):106:106 -> expireTimer
+    24:30:void expireTimer(android.content.Context,int):106 -> expireTimer
     31:33:void androidx.core.content.SharedPreferencesKt.edit(android.content.SharedPreferences,boolean,kotlin.jvm.functions.Function1):51:51 -> expireTimer
-    31:33:void expireTimer(android.content.Context,int):100 -> expireTimer
-    34:61:void startTimer(android.content.Context,int):104:104 -> expireTimer
-    34:61:void expireTimer(android.content.Context,int):104 -> expireTimer
-    4:17:void startTimer(android.content.Context,int):116:116 -> getCurrentTimerDurationMS
-    4:17:long getCurrentTimerDurationMS(android.content.Context,int):116 -> getCurrentTimerDurationMS
-    4:17:void startTimer(android.content.Context,int):108:108 -> getDurationMS
-    4:17:long getDurationMS(android.content.Context,int):108 -> getDurationMS
-    4:16:void startTimer(android.content.Context,int):165:165 -> getLastFinishTime
-    4:16:long getLastFinishTime(android.content.Context,int):165 -> getLastFinishTime
-    4:19:void startTimer(android.content.Context,int):124:124 -> getMedicineName
-    4:19:java.lang.String getMedicineName(android.content.Context,int):124 -> getMedicineName
+    31:33:void expireTimer(android.content.Context,int):104 -> expireTimer
+    34:61:void startTimer(android.content.Context,int):108:108 -> expireTimer
+    34:61:void expireTimer(android.content.Context,int):108 -> expireTimer
+    4:17:void startTimer(android.content.Context,int):120:120 -> getCurrentTimerDurationMS
+    4:17:long getCurrentTimerDurationMS(android.content.Context,int):120 -> getCurrentTimerDurationMS
+    4:17:void startTimer(android.content.Context,int):112:112 -> getDurationMS
+    4:17:long getDurationMS(android.content.Context,int):112 -> getDurationMS
+    4:16:void startTimer(android.content.Context,int):169:169 -> getLastFinishTime
+    4:16:long getLastFinishTime(android.content.Context,int):169 -> getLastFinishTime
+    4:19:void startTimer(android.content.Context,int):128:128 -> getMedicineName
+    4:19:java.lang.String getMedicineName(android.content.Context,int):128 -> getMedicineName
     3:4:android.content.SharedPreferences getPrefs(android.content.Context,int):47:47 -> getPrefs
     5:9:android.content.SharedPreferences getPrefs(android.content.Context,int):0:0 -> getPrefs
       # {"id":"com.android.tools.r8.outlineCallsite","positions":{"1":21,"3":23,"6":26,"9":30},"outline":"Lix0;m(Ljava/lang/String;I)Ljava/lang/String;"}
@@ -231441,92 +231441,92 @@ com.gayoddities.hrttimer.TimerPreferences -> com.gayoddities.hrttimer.TimerPrefe
     23:23:android.content.SharedPreferences getPrefs(android.content.Context,int):47:47 -> getPrefs
     26:26:android.content.SharedPreferences getPrefs(android.content.Context,int):47:47 -> getPrefs
     30:30:android.content.SharedPreferences getPrefs(android.content.Context,int):47:47 -> getPrefs
-    4:17:void startTimer(android.content.Context,int):132:132 -> getReadyColor
-    4:17:int getReadyColor(android.content.Context,int):132 -> getReadyColor
-    4:16:void startTimer(android.content.Context,int):120:120 -> getStartTime
-    4:16:long getStartTime(android.content.Context,int):120 -> getStartTime
-    4:15:void startTimer(android.content.Context,int):143:143 -> getStreakCount
-    4:15:int getStreakCount(android.content.Context,int):143 -> getStreakCount
-    4:17:void startTimer(android.content.Context,int):157:157 -> getStreakWindowMS
-    4:17:long getStreakWindowMS(android.content.Context,int):157 -> getStreakWindowMS
-    4:9:void startTimer(android.content.Context,int):147:147 -> incrementStreakCount
-    4:9:int incrementStreakCount(android.content.Context,int):147 -> incrementStreakCount
-    10:13:void startTimer(android.content.Context,int):148:148 -> incrementStreakCount
-    10:13:int incrementStreakCount(android.content.Context,int):148 -> incrementStreakCount
+    4:17:void startTimer(android.content.Context,int):136:136 -> getReadyColor
+    4:17:int getReadyColor(android.content.Context,int):136 -> getReadyColor
+    4:16:void startTimer(android.content.Context,int):124:124 -> getStartTime
+    4:16:long getStartTime(android.content.Context,int):124 -> getStartTime
+    4:15:void startTimer(android.content.Context,int):147:147 -> getStreakCount
+    4:15:int getStreakCount(android.content.Context,int):147 -> getStreakCount
+    4:17:void startTimer(android.content.Context,int):161:161 -> getStreakWindowMS
+    4:17:long getStreakWindowMS(android.content.Context,int):161 -> getStreakWindowMS
+    4:9:void startTimer(android.content.Context,int):151:151 -> incrementStreakCount
+    4:9:int incrementStreakCount(android.content.Context,int):151 -> incrementStreakCount
+    10:13:void startTimer(android.content.Context,int):152:152 -> incrementStreakCount
+    10:13:int incrementStreakCount(android.content.Context,int):152 -> incrementStreakCount
     14:17:void androidx.core.content.SharedPreferencesKt.edit(android.content.SharedPreferences,boolean,kotlin.jvm.functions.Function1):48:48 -> incrementStreakCount
-    14:17:int incrementStreakCount(android.content.Context,int):148 -> incrementStreakCount
+    14:17:int incrementStreakCount(android.content.Context,int):152 -> incrementStreakCount
     18:20:void androidx.core.content.SharedPreferencesKt.edit(android.content.SharedPreferences,boolean,kotlin.jvm.functions.Function1):49:49 -> incrementStreakCount
-    18:20:int incrementStreakCount(android.content.Context,int):148 -> incrementStreakCount
-    21:25:void startTimer(android.content.Context,int):148:148 -> incrementStreakCount
-    21:25:int incrementStreakCount(android.content.Context,int):148 -> incrementStreakCount
+    18:20:int incrementStreakCount(android.content.Context,int):152 -> incrementStreakCount
+    21:25:void startTimer(android.content.Context,int):152:152 -> incrementStreakCount
+    21:25:int incrementStreakCount(android.content.Context,int):152 -> incrementStreakCount
     26:29:void androidx.core.content.SharedPreferencesKt.edit(android.content.SharedPreferences,boolean,kotlin.jvm.functions.Function1):51:51 -> incrementStreakCount
-    26:29:int incrementStreakCount(android.content.Context,int):148 -> incrementStreakCount
-    4:7:void startTimer(android.content.Context,int):153:153 -> resetStreakCount
-    4:7:void resetStreakCount(android.content.Context,int):153 -> resetStreakCount
+    26:29:int incrementStreakCount(android.content.Context,int):152 -> incrementStreakCount
+    4:7:void startTimer(android.content.Context,int):157:157 -> resetStreakCount
+    4:7:void resetStreakCount(android.content.Context,int):157 -> resetStreakCount
     8:11:void androidx.core.content.SharedPreferencesKt.edit(android.content.SharedPreferences,boolean,kotlin.jvm.functions.Function1):48:48 -> resetStreakCount
-    8:11:void resetStreakCount(android.content.Context,int):153 -> resetStreakCount
+    8:11:void resetStreakCount(android.content.Context,int):157 -> resetStreakCount
     12:14:void androidx.core.content.SharedPreferencesKt.edit(android.content.SharedPreferences,boolean,kotlin.jvm.functions.Function1):49:49 -> resetStreakCount
-    12:14:void resetStreakCount(android.content.Context,int):153 -> resetStreakCount
-    15:20:void startTimer(android.content.Context,int):153:153 -> resetStreakCount
-    15:20:void resetStreakCount(android.content.Context,int):153 -> resetStreakCount
+    12:14:void resetStreakCount(android.content.Context,int):157 -> resetStreakCount
+    15:20:void startTimer(android.content.Context,int):157:157 -> resetStreakCount
+    15:20:void resetStreakCount(android.content.Context,int):157 -> resetStreakCount
     21:24:void androidx.core.content.SharedPreferencesKt.edit(android.content.SharedPreferences,boolean,kotlin.jvm.functions.Function1):51:51 -> resetStreakCount
-    21:24:void resetStreakCount(android.content.Context,int):153 -> resetStreakCount
-    4:7:void startTimer(android.content.Context,int):89:89 -> resetTimer
-    4:7:void resetTimer(android.content.Context,int):89 -> resetTimer
+    21:24:void resetStreakCount(android.content.Context,int):157 -> resetStreakCount
+    4:7:void startTimer(android.content.Context,int):93:93 -> resetTimer
+    4:7:void resetTimer(android.content.Context,int):93 -> resetTimer
     8:11:void androidx.core.content.SharedPreferencesKt.edit(android.content.SharedPreferences,boolean,kotlin.jvm.functions.Function1):48:48 -> resetTimer
-    8:11:void resetTimer(android.content.Context,int):89 -> resetTimer
+    8:11:void resetTimer(android.content.Context,int):93 -> resetTimer
     12:14:void androidx.core.content.SharedPreferencesKt.edit(android.content.SharedPreferences,boolean,kotlin.jvm.functions.Function1):49:49 -> resetTimer
-    12:14:void resetTimer(android.content.Context,int):89 -> resetTimer
-    15:21:void startTimer(android.content.Context,int):90:90 -> resetTimer
-    15:21:void resetTimer(android.content.Context,int):90 -> resetTimer
-    22:27:void startTimer(android.content.Context,int):91:91 -> resetTimer
-    22:27:void resetTimer(android.content.Context,int):91 -> resetTimer
-    28:32:void startTimer(android.content.Context,int):92:92 -> resetTimer
-    28:32:void resetTimer(android.content.Context,int):92 -> resetTimer
+    12:14:void resetTimer(android.content.Context,int):93 -> resetTimer
+    15:21:void startTimer(android.content.Context,int):94:94 -> resetTimer
+    15:21:void resetTimer(android.content.Context,int):94 -> resetTimer
+    22:27:void startTimer(android.content.Context,int):95:95 -> resetTimer
+    22:27:void resetTimer(android.content.Context,int):95 -> resetTimer
+    28:32:void startTimer(android.content.Context,int):96:96 -> resetTimer
+    28:32:void resetTimer(android.content.Context,int):96 -> resetTimer
     33:35:void androidx.core.content.SharedPreferencesKt.edit(android.content.SharedPreferences,boolean,kotlin.jvm.functions.Function1):51:51 -> resetTimer
-    33:35:void resetTimer(android.content.Context,int):89 -> resetTimer
-    36:55:void startTimer(android.content.Context,int):94:94 -> resetTimer
-    36:55:void resetTimer(android.content.Context,int):94 -> resetTimer
-    4:7:void startTimer(android.content.Context,int):112:112 -> setDurationMS
-    4:7:void setDurationMS(android.content.Context,int,long):112 -> setDurationMS
+    33:35:void resetTimer(android.content.Context,int):93 -> resetTimer
+    36:55:void startTimer(android.content.Context,int):98:98 -> resetTimer
+    36:55:void resetTimer(android.content.Context,int):98 -> resetTimer
+    4:7:void startTimer(android.content.Context,int):116:116 -> setDurationMS
+    4:7:void setDurationMS(android.content.Context,int,long):116 -> setDurationMS
     8:11:void androidx.core.content.SharedPreferencesKt.edit(android.content.SharedPreferences,boolean,kotlin.jvm.functions.Function1):48:48 -> setDurationMS
-    8:11:void setDurationMS(android.content.Context,int,long):112 -> setDurationMS
+    8:11:void setDurationMS(android.content.Context,int,long):116 -> setDurationMS
     12:14:void androidx.core.content.SharedPreferencesKt.edit(android.content.SharedPreferences,boolean,kotlin.jvm.functions.Function1):49:49 -> setDurationMS
-    12:14:void setDurationMS(android.content.Context,int,long):112 -> setDurationMS
-    15:19:void startTimer(android.content.Context,int):112:112 -> setDurationMS
-    15:19:void setDurationMS(android.content.Context,int,long):112 -> setDurationMS
+    12:14:void setDurationMS(android.content.Context,int,long):116 -> setDurationMS
+    15:19:void startTimer(android.content.Context,int):116:116 -> setDurationMS
+    15:19:void setDurationMS(android.content.Context,int,long):116 -> setDurationMS
     20:23:void androidx.core.content.SharedPreferencesKt.edit(android.content.SharedPreferences,boolean,kotlin.jvm.functions.Function1):51:51 -> setDurationMS
-    20:23:void setDurationMS(android.content.Context,int,long):112 -> setDurationMS
-    7:10:void startTimer(android.content.Context,int):128:128 -> setMedicineName
-    7:10:void setMedicineName(android.content.Context,int,java.lang.String):128 -> setMedicineName
+    20:23:void setDurationMS(android.content.Context,int,long):116 -> setDurationMS
+    7:10:void startTimer(android.content.Context,int):132:132 -> setMedicineName
+    7:10:void setMedicineName(android.content.Context,int,java.lang.String):132 -> setMedicineName
     11:14:void androidx.core.content.SharedPreferencesKt.edit(android.content.SharedPreferences,boolean,kotlin.jvm.functions.Function1):48:48 -> setMedicineName
-    11:14:void setMedicineName(android.content.Context,int,java.lang.String):128 -> setMedicineName
+    11:14:void setMedicineName(android.content.Context,int,java.lang.String):132 -> setMedicineName
     15:17:void androidx.core.content.SharedPreferencesKt.edit(android.content.SharedPreferences,boolean,kotlin.jvm.functions.Function1):49:49 -> setMedicineName
-    15:17:void setMedicineName(android.content.Context,int,java.lang.String):128 -> setMedicineName
-    18:30:void startTimer(android.content.Context,int):128:128 -> setMedicineName
-    18:30:void setMedicineName(android.content.Context,int,java.lang.String):128 -> setMedicineName
+    15:17:void setMedicineName(android.content.Context,int,java.lang.String):132 -> setMedicineName
+    18:30:void startTimer(android.content.Context,int):132:132 -> setMedicineName
+    18:30:void setMedicineName(android.content.Context,int,java.lang.String):132 -> setMedicineName
     31:34:void androidx.core.content.SharedPreferencesKt.edit(android.content.SharedPreferences,boolean,kotlin.jvm.functions.Function1):51:51 -> setMedicineName
-    31:34:void setMedicineName(android.content.Context,int,java.lang.String):128 -> setMedicineName
-    4:7:void startTimer(android.content.Context,int):136:136 -> setReadyColor
-    4:7:void setReadyColor(android.content.Context,int,int):136 -> setReadyColor
+    31:34:void setMedicineName(android.content.Context,int,java.lang.String):132 -> setMedicineName
+    4:7:void startTimer(android.content.Context,int):140:140 -> setReadyColor
+    4:7:void setReadyColor(android.content.Context,int,int):140 -> setReadyColor
     8:11:void androidx.core.content.SharedPreferencesKt.edit(android.content.SharedPreferences,boolean,kotlin.jvm.functions.Function1):48:48 -> setReadyColor
-    8:11:void setReadyColor(android.content.Context,int,int):136 -> setReadyColor
+    8:11:void setReadyColor(android.content.Context,int,int):140 -> setReadyColor
     12:14:void androidx.core.content.SharedPreferencesKt.edit(android.content.SharedPreferences,boolean,kotlin.jvm.functions.Function1):49:49 -> setReadyColor
-    12:14:void setReadyColor(android.content.Context,int,int):136 -> setReadyColor
-    15:19:void startTimer(android.content.Context,int):136:136 -> setReadyColor
-    15:19:void setReadyColor(android.content.Context,int,int):136 -> setReadyColor
+    12:14:void setReadyColor(android.content.Context,int,int):140 -> setReadyColor
+    15:19:void startTimer(android.content.Context,int):140:140 -> setReadyColor
+    15:19:void setReadyColor(android.content.Context,int,int):140 -> setReadyColor
     20:23:void androidx.core.content.SharedPreferencesKt.edit(android.content.SharedPreferences,boolean,kotlin.jvm.functions.Function1):51:51 -> setReadyColor
-    20:23:void setReadyColor(android.content.Context,int,int):136 -> setReadyColor
-    4:7:void startTimer(android.content.Context,int):161:161 -> setStreakWindowMS
-    4:7:void setStreakWindowMS(android.content.Context,int,long):161 -> setStreakWindowMS
+    20:23:void setReadyColor(android.content.Context,int,int):140 -> setReadyColor
+    4:7:void startTimer(android.content.Context,int):165:165 -> setStreakWindowMS
+    4:7:void setStreakWindowMS(android.content.Context,int,long):165 -> setStreakWindowMS
     8:11:void androidx.core.content.SharedPreferencesKt.edit(android.content.SharedPreferences,boolean,kotlin.jvm.functions.Function1):48:48 -> setStreakWindowMS
-    8:11:void setStreakWindowMS(android.content.Context,int,long):161 -> setStreakWindowMS
+    8:11:void setStreakWindowMS(android.content.Context,int,long):165 -> setStreakWindowMS
     12:14:void androidx.core.content.SharedPreferencesKt.edit(android.content.SharedPreferences,boolean,kotlin.jvm.functions.Function1):49:49 -> setStreakWindowMS
-    12:14:void setStreakWindowMS(android.content.Context,int,long):161 -> setStreakWindowMS
-    15:19:void startTimer(android.content.Context,int):161:161 -> setStreakWindowMS
-    15:19:void setStreakWindowMS(android.content.Context,int,long):161 -> setStreakWindowMS
+    12:14:void setStreakWindowMS(android.content.Context,int,long):165 -> setStreakWindowMS
+    15:19:void startTimer(android.content.Context,int):165:165 -> setStreakWindowMS
+    15:19:void setStreakWindowMS(android.content.Context,int,long):165 -> setStreakWindowMS
     20:23:void androidx.core.content.SharedPreferencesKt.edit(android.content.SharedPreferences,boolean,kotlin.jvm.functions.Function1):51:51 -> setStreakWindowMS
-    20:23:void setStreakWindowMS(android.content.Context,int,long):161 -> setStreakWindowMS
+    20:23:void setStreakWindowMS(android.content.Context,int,long):165 -> setStreakWindowMS
     4:7:void startTimer(android.content.Context,int):55:55 -> startTimer
     8:11:void startTimer(android.content.Context,int):56:56 -> startTimer
     12:15:void startTimer(android.content.Context,int):57:57 -> startTimer
@@ -231536,25 +231536,27 @@ com.gayoddities.hrttimer.TimerPreferences -> com.gayoddities.hrttimer.TimerPrefe
     33:36:void startTimer(android.content.Context,int):64 -> startTimer
     37:39:void androidx.core.content.SharedPreferencesKt.edit(android.content.SharedPreferences,boolean,kotlin.jvm.functions.Function1):49:49 -> startTimer
     37:39:void startTimer(android.content.Context,int):64 -> startTimer
-    40:44:void startTimer(android.content.Context,int):64:64 -> startTimer
-    45:47:void androidx.core.content.SharedPreferencesKt.edit(android.content.SharedPreferences,boolean,kotlin.jvm.functions.Function1):51:51 -> startTimer
-    45:47:void startTimer(android.content.Context,int):64 -> startTimer
-    48:51:void androidx.core.content.SharedPreferencesKt.edit(android.content.SharedPreferences,boolean,kotlin.jvm.functions.Function1):48:48 -> startTimer
-    48:51:void startTimer(android.content.Context,int):67 -> startTimer
-    52:54:void androidx.core.content.SharedPreferencesKt.edit(android.content.SharedPreferences,boolean,kotlin.jvm.functions.Function1):49:49 -> startTimer
-    52:54:void startTimer(android.content.Context,int):67 -> startTimer
-    55:59:void startTimer(android.content.Context,int):67:67 -> startTimer
+    40:44:void startTimer(android.content.Context,int):65:65 -> startTimer
+    45:49:void startTimer(android.content.Context,int):66:66 -> startTimer
+    50:52:void androidx.core.content.SharedPreferencesKt.edit(android.content.SharedPreferences,boolean,kotlin.jvm.functions.Function1):51:51 -> startTimer
+    50:52:void startTimer(android.content.Context,int):64 -> startTimer
+    53:56:void androidx.core.content.SharedPreferencesKt.edit(android.content.SharedPreferences,boolean,kotlin.jvm.functions.Function1):48:48 -> startTimer
+    53:56:void startTimer(android.content.Context,int):70 -> startTimer
+    57:59:void androidx.core.content.SharedPreferencesKt.edit(android.content.SharedPreferences,boolean,kotlin.jvm.functions.Function1):49:49 -> startTimer
+    57:59:void startTimer(android.content.Context,int):70 -> startTimer
     60:62:void androidx.core.content.SharedPreferencesKt.edit(android.content.SharedPreferences,boolean,kotlin.jvm.functions.Function1):51:51 -> startTimer
-    60:62:void startTimer(android.content.Context,int):67 -> startTimer
-    63:104:void startTimer(android.content.Context,int):68:68 -> startTimer
-    105:108:void startTimer(android.content.Context,int):78:78 -> startTimer
-    109:112:void startTimer(android.content.Context,int):80:80 -> startTimer
-    113:116:void startTimer(android.content.Context,int):83:83 -> startTimer
+    60:62:void startTimer(android.content.Context,int):70 -> startTimer
+    63:89:void startTimer(android.content.Context,int):71:71 -> startTimer
+    90:121:void startTimer(android.content.Context,int):72:72 -> startTimer
+    122:125:void startTimer(android.content.Context,int):82:82 -> startTimer
+    126:129:void startTimer(android.content.Context,int):84:84 -> startTimer
+    130:133:void startTimer(android.content.Context,int):87:87 -> startTimer
 com.gayoddities.hrttimer.TimerUtils -> com.gayoddities.hrttimer.TimerUtils:
 # {"id":"sourceFile","fileName":"TimerUtils.kt"}
     1:8:void <clinit>():0:0 -> <clinit>
     1:4:void <init>():11:11 -> <init>
-    4:15:long getFinishTime(android.content.Context,int):55:55 -> getFinishTime
+    4:18:long getFinishTime(android.content.Context,int):55:55 -> getFinishTime
+    19:24:long getFinishTime(android.content.Context,int):57:57 -> getFinishTime
     4:9:long getRemainingTime(android.content.Context,int):48:48 -> getRemainingTime
     10:13:long getRemainingTime(android.content.Context,int):49:49 -> getRemainingTime
     14:18:long getRemainingTime(android.content.Context,int):50:50 -> getRemainingTime
@@ -231567,17 +231569,17 @@ com.gayoddities.hrttimer.TimerUtils -> com.gayoddities.hrttimer.TimerUtils:
     19:23:boolean isTimerExpired(android.content.Context,int):31:31 -> isTimerExpired
     24:24:boolean isTimerExpired(long,long,long):21:21 -> isTimerExpired
     5:17:boolean isTimerExpired$default(com.gayoddities.hrttimer.TimerUtils,long,long,long,int,java.lang.Object):18:18 -> isTimerExpired$default
-    4:14:void scheduleTimerAlarm(android.content.Context,long):63:63 -> scheduleTimerAlarm
-    15:24:void scheduleTimerAlarm(android.content.Context,long):65:65 -> scheduleTimerAlarm
-    25:28:void scheduleTimerAlarm(android.content.Context,long):66:66 -> scheduleTimerAlarm
-    29:38:void scheduleTimerAlarm(android.content.Context,long):75:75 -> scheduleTimerAlarm
-    39:44:void scheduleTimerAlarm(android.content.Context,long):76:76 -> scheduleTimerAlarm
-    45:47:void scheduleTimerAlarm(android.content.Context,long):77:77 -> scheduleTimerAlarm
-    48:63:void scheduleTimerAlarm(android.content.Context,long):82:82 -> scheduleTimerAlarm
-    64:66:void scheduleTimerAlarm(android.content.Context,long):85:85 -> scheduleTimerAlarm
-    67:72:void scheduleTimerAlarm(android.content.Context,long):90:90 -> scheduleTimerAlarm
-    73:75:void scheduleTimerAlarm(android.content.Context,long):93:93 -> scheduleTimerAlarm
-    76:91:void scheduleTimerAlarm(android.content.Context,long):98:98 -> scheduleTimerAlarm
+    4:14:void scheduleTimerAlarm(android.content.Context,long):65:65 -> scheduleTimerAlarm
+    15:24:void scheduleTimerAlarm(android.content.Context,long):67:67 -> scheduleTimerAlarm
+    25:28:void scheduleTimerAlarm(android.content.Context,long):68:68 -> scheduleTimerAlarm
+    29:38:void scheduleTimerAlarm(android.content.Context,long):77:77 -> scheduleTimerAlarm
+    39:44:void scheduleTimerAlarm(android.content.Context,long):78:78 -> scheduleTimerAlarm
+    45:47:void scheduleTimerAlarm(android.content.Context,long):79:79 -> scheduleTimerAlarm
+    48:63:void scheduleTimerAlarm(android.content.Context,long):84:84 -> scheduleTimerAlarm
+    64:66:void scheduleTimerAlarm(android.content.Context,long):87:87 -> scheduleTimerAlarm
+    67:72:void scheduleTimerAlarm(android.content.Context,long):92:92 -> scheduleTimerAlarm
+    73:75:void scheduleTimerAlarm(android.content.Context,long):95:95 -> scheduleTimerAlarm
+    76:91:void scheduleTimerAlarm(android.content.Context,long):100:100 -> scheduleTimerAlarm
 com.gayoddities.hrttimer.ToggleTimerAction -> com.gayoddities.hrttimer.ToggleTimerAction:
 # {"id":"sourceFile","fileName":"HRTWidget.kt"}
     1:4:void <init>():145:145 -> <init>

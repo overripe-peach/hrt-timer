@@ -28,15 +28,15 @@ object TimerPreferences {
     //Background ready state defaults to green
     const val DEFAULT_READY_COLOR = 0xFF9C27B0.toInt()
     // Default to 7 days if none is set
-    const val DEFAULT_DURATION = 7 * 24 * 60 * 60 * 1000L
+    const val DEFAULT_DURATION = 7L * 24L * 60L * 60L * 1000L
     const val DEFAULT_MEDICINE_NAME = "HRT"
     const val RUNNING_COLOR = 0xFF333333.toInt()
-    const val DEFAULT_STREAK_WINDOW = 24 * 60 * 60 * 1000L // Default 1 day grace window
+    const val DEFAULT_STREAK_WINDOW = 24L * 60L * 60L * 1000L // Default 1 day grace window
 
     //TIME CONSTANTS
-    const val DAYS_MS = 24 * 60 * 60 * 1000L //or 86,400,000
-    const val HOUR_MS = 60 * 60 * 1000L //or 3,600,000
-    const val MINUTE_MS = 60 * 1000L //or 60,000
+    const val DAYS_MS = 24L * 60L * 60L * 1000L //or 86,400,000
+    const val HOUR_MS = 60L * 60L * 1000L //or 3,600,000
+    const val MINUTE_MS = 60L * 1000L //or 60,000
 
     /**
      * Returns a SharedPreferences instance scoped to a specific widget instance ID if provided,
@@ -61,11 +61,15 @@ object TimerPreferences {
         //This prevents settings page from updating the finish date / time
         //on a current running timer
         val newDuration =  getPrefs(context, appWidgetId).getLong(KEY_DURATION_MS, DEFAULT_DURATION)
-        prefs.edit(commit = true) { putLong(KEY_CURRENT_TIMER_DURATION_MS, newDuration) }
+        prefs.edit(commit = true) {
+            putLong(KEY_CURRENT_TIMER_DURATION_MS, newDuration)
+            putLong(KEY_START_TIME, currentTime)
+        }
 
-        //place system current time into start time key
-        prefs.edit(commit = true) { putLong(KEY_START_TIME, currentTime) }
+
+        prefs.edit(commit = true) {  }
         Log.d("TimerPreferences", "Timer started at $currentTime for widget ID: $appWidgetId")
+        Log.d("TimerPreferences", "Timer duration MS: $newDuration")
 
         //set streak window to 0 to disable streak
         if (streakWindow > 0) {

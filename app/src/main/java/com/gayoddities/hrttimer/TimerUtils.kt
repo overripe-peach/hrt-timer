@@ -51,8 +51,10 @@ object TimerUtils {
         return getRemainingTime(startTime, duration, currentTime)
     }
 
-    fun getFinishTime(context:Context, appWidgetId: Int): Long {
-        return TimerPreferences.getStartTime(context,appWidgetId) + TimerPreferences.getDurationMS(context,appWidgetId)
+    fun getFinishTime(context: Context, appWidgetId: Int): Long {
+        val startTime = TimerPreferences.getStartTime(context, appWidgetId)
+        if (startTime <= 0L) return -1L
+        return startTime + TimerPreferences.getCurrentTimerDurationMS(context, appWidgetId)
     }
    /////
     /**

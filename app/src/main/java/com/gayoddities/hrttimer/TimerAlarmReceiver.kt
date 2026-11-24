@@ -69,7 +69,8 @@ class RescheduleReceiver : BroadcastReceiver() {
                         //Evaluate and fix SharedPreferences state
                         if (TimerUtils.isTimerExpired(context, appWidgetId)) {
                             Log.d("BootReceiver", "Timer expired for widget ID $appWidgetId while off. Clearing state.")
-                            TimerPreferences.resetTimer(context, appWidgetId)
+                            //TimerPreferences.resetTimer(context, appWidgetId)
+                            TimerPreferences.expireTimer(context, appWidgetId)
                         } else {
                             val finishTime = TimerUtils.getFinishTime(context, appWidgetId)
                             Log.d("BootReceiver", "Timer still active for widget ID $appWidgetId. Rescheduling alarm for: $finishTime")
